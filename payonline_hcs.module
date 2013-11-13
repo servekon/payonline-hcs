@@ -1,0 +1,646 @@
+<?php
+// $Id: payonline_hcs.module,v 1.0 2013/11/02 00:55:25 servekon Exp $
+
+$payOnlMid	 		= (string)check_plain(variable_get('payonline_hcs_mid', ''));
+$payOnlPrivSecKey 	= (string)check_plain(variable_get('payonline_hcs_private_key', ''));
+$payOnlPage 		= (string)check_plain(variable_get('payonline_hcs_form_payment_page', 'https://secure.payonlinesystem.com/ru/payment/select/'));
+$payOnlCommiss 		= (float)variable_get('payonline_hcs_commission', 0);
+$payOnlStrah 		= (float)variable_get('payonline_hcs_home_insurance', 0);
+$payOnlLiability	= (float)variable_get('payonline_hcs_liability_insurance', 0);
+$payOnlFullStrah 	= (float)variable_get('payonline_hcs_full_insurance', 0);
+$payOnlOffNode		= (int)variable_get('payonline_hcs_offer_node_id', 0);
+$payOnlCheckFlat	= (int)variable_get('payonline_hcs_use_handbook_verify', 0);
+
+define('AP_PAYONLINE_PATH_MODULE', (string)base_path().drupal_get_path('module', 'payonline_hcs'));
+
+define('AK_PAY_ONL_HCS_MID', $payOnlMid);
+define('AK_PAY_ONL_HCS__PRIV_SEC_KEY', $payOnlPrivSecKey);
+define('AK_PAY_ONL_HCS___PAGE', $payOnlPage);
+define('AK_PAY_ONL_HCS____COMMISS', $payOnlCommiss);
+define('AK_PAY_ONL_HCS_____OFF_NODE_ID', $payOnlOffNode);
+
+define('AK_PAY_ONL_HCSI_HOME', $payOnlStrah);
+define('AK_PAY_ONL_HCSI__LIABILITY', $payOnlLiability);
+define('AK_PAY_ONL_HCSI___FULL', $payOnlFullStrah);
+
+define('AK_PAY_ONL_HCSCHECK_FLAT', $payOnlCheckFlat);
+
+/**
+* Valid permissions for this module
+* @return array An array of valid permissions for the onthisdate module
+*/
+
+function payonline_hcs_permission(){
+  return array(
+    'anonym_access_payonline_hcs' => array(
+      'title' => t('Anonym access payonline_hcs'),
+      'restrict access' => TRUE,
+    ),
+    'view_payonline_hcs' => array(
+      'title' => t('View payment payonline_hcs'),
+    ),
+    'payable_payonline_hcs' => array(
+      'title' => t('Can to make payment'),
+      'description' => t('Allow users get payment form'),
+    ),
+	'administer_payonline_hcs' => array(
+      'title' => t('Administer payonline_hcs'),
+      'restrict access' => TRUE,
+    ),
+  );
+}
+
+/**
+ * Implementation of hook_menu().
+ * Adds a settings page.
+ */
+function payonline_hcs_menu() {
+  
+	$menu['admin/payonline_hcs'] = array(
+		'title' => 'Payments from Payonline',
+		'page callback' => 'drupal_get_form',
+		'page arguments' => array('payonline_hcs_viewpayment'),
+		'access arguments' => array('administer_payonline_hcs'),
+		'file' => 'payonline_hcs.admin.inc',
+	);
+	
+	$menu['admin/payonline_hcs/list'] = array(
+		'title' => 'List all payments',
+		'type' => MENU_DEFAULT_LOCAL_TASK,
+		'weight' => 1,
+		
+	);
+	
+	$menu['admin/payonline_hcs/packs'] = array(
+		'title' => 'Packs of payment',
+		'description' => 'View or add packs of payment',
+		'page callback' => 'payonline_hcs_viewpacks',
+		'access arguments' => array('administer_payonline_hcs'),
+		'file' => 'payonline_hcs.admin.inc',
+		'type' => MENU_LOCAL_TASK,
+		'weight' => 2,
+	);
+	
+	$menu['admin/payonline_hcs/packs/view/%'] = array(
+		'title' => 'View payments by pack',
+		'description' => 'View or add packs of payment',
+		'page callback' => 'payonline_hcs_viewreestrpack',
+		'page arguments' => array(4),
+		'access arguments' => array('administer_payonline_hcs'),
+		'file' => 'payonline_hcs.admin.inc',
+	);
+	
+	$menu['admin/payonline_hcs/packs/export/%'] = array(
+		'title' => 'Export packs of payment',
+		'description' => 'Export pack of payment to CSV',
+		'page callback' => 'payonline_hcs_export_pack',
+		'page arguments' => array(4),
+		'access arguments' => array('administer_payonline_hcs'),
+		'file' => 'payonline_hcs.admin.inc',
+	);
+	
+	$menu['admin/payonline_hcs/packs/add'] = array(
+		'title' => 'Add the pack of payment',
+		'description' => 'Form to addd pack of payment',
+		'page callback' => 'drupal_get_form',
+		'page arguments' => array('payonline_hcs_add_pack_form'),
+		'access arguments' => array('administer_payonline_hcs'),
+		'file' => 'payonline_hcs.admin.inc',
+		'type' => MENU_LOCAL_ACTION,
+		'weight' => -1,
+	);
+	
+	$menu['admin/payonline_hcs/export'] = array(
+		'title' => 'Export payments for the period',
+		'description' => 'Export payment by date range',
+		'page callback' => 'drupal_get_form',
+		'page arguments' => array('payonline_hcs_export_by_date_form'),
+		'access arguments' => array('administer_payonline_hcs'),
+		'file' => 'payonline_hcs.admin.inc',
+		'type' => MENU_LOCAL_TASK,
+		'weight' => 3,
+	);
+	
+	$menu['admin/payonline_hcs/configure'] = array(
+		'title' => 'Configure Payonline',
+		'description' => 'Configure the Payonline HCS module',
+		'page callback' => 'drupal_get_form',
+		'page arguments' => array('payonline_hcs_admin'),
+		'access arguments' => array('administer_payonline_hcs'),
+		'file' => 'payonline_hcs.admin.inc',
+		'type' => MENU_LOCAL_TASK,
+		'weight' => 10,
+	);
+	
+	$menu['admin/payonline_hcs/configure/setting'] = array(
+		'title' => 'Settings',
+		'type' => MENU_DEFAULT_LOCAL_TASK,
+		'weight' => 1,
+		
+	);
+	
+	$menu['admin/payonline_hcs/configure/import'] = array(
+		'title' => 'Handbook with the room flats',
+		'page callback' => 'drupal_get_form',
+		'page arguments' => array('payonline_hcs_fill_pan_flats_form'),
+		'access arguments' => array('administer_payonline_hcs'),
+		'file' => 'payonline_hcs.admin.inc',
+		'type' => MENU_LOCAL_TASK,
+		'weight' => 2,
+	);
+	
+	//~ User
+	$menu['payonline-hcs/make-payment'] = array(
+		'title' => 'Make payment Payonline',
+		'description' => 'Make payment to Payonline.',
+		'page callback' => 'drupal_get_form',
+		'page arguments' => array('payonline_hcs_payment_form'),
+		'access arguments' => array('payable_payonline_hcs'),
+	);
+	
+	$menu['payonline-hcs/view-payment'] = array(
+		'title' => 'View payment from Payonline',
+		'page callback' => 'drupal_get_form',
+		'page arguments' => array('payonline_hcs_viewpayment'),
+		'access arguments' => array('view_payonline_hcs'),
+		'file' => 'payonline_hcs.admin.inc',
+	);
+	
+	$menu['payonline-hcs/confirm'] = array(
+		'title' => 'Confirm Payment Payonline',
+		'description' => 'Confirm Payment from Payonline.',
+		'page callback' => 'payonline_hcs_confirm_payment',
+		'access arguments' => array('anonym_access_payonline_hcs'),
+		'file' => 'payonline_hcs.user.inc',
+		'type' => MENU_CALLBACK
+	);
+
+	return $menu;
+}
+
+/**
+ * Implements hook_block_info().
+ */
+function payonline_hcs_block_info(){
+	$blocks['pay_hcs_payform_block'] = array(
+		'info' => t('Payment form HCS'),
+		'status' => FALSE,
+		'visibility' => BLOCK_VISIBILITY_NOTLISTED,
+		'pages' => 'payonline-hcs/make-payment',
+	);
+	return $blocks;
+}
+
+/**
+ * Implements hook_block_configure().
+ */
+function payonline_hcs_block_configure($delta=''){
+	$form = array();
+	if($delta == 'pay_hcs_payform_block'){
+		$form['payonline_hcs_home_insurance'] = array(
+			'#type' => 'textfield',
+			'#title' => t('Home insurance'),
+			'#default_value' => AK_PAY_ONL_HCSI_HOME,
+		);
+		
+		$form['payonline_hcs_liability_insurance'] = array(
+			'#type' => 'textfield',
+			'#title' => t('Third party liability insurance'),
+			'#default_value' => AK_PAY_ONL_HCSI__LIABILITY,
+		);
+		
+		$form['payonline_hcs_full_insurance'] = array(
+			'#type' => 'textfield',
+			'#title' => t('Full insurance'),
+			'#default_value' => AK_PAY_ONL_HCSI___FULL,
+		);
+		
+		$form['payonline_hcs_offer_node_id'] = array(
+			'#type' => 'textfield',
+			'#title' => t('Node ID with contract offer'),
+			'#default_value' => AK_PAY_ONL_HCS_____OFF_NODE_ID,
+		);
+	}
+	return $form;
+}
+
+/**
+ * Implements hook_block_save().
+ */
+function payonline_hcs_block_save($delta = '', $edit = array()) {
+  if ($delta == 'pay_hcs_payform_block') {
+    variable_set('payonline_hcs_home_insurance', check_plain($edit['payonline_hcs_home_insurance']));
+    variable_set('payonline_hcs_liability_insurance', check_plain($edit['payonline_hcs_liability_insurance']));
+    variable_set('payonline_hcs_full_insurance', check_plain($edit['payonline_hcs_full_insurance']));
+    variable_set('payonline_hcs_offer_node_id', check_plain($edit['payonline_hcs_offer_node_id']));
+  }
+  return;
+}
+
+/**
+ * Implements hook_block_view().
+ */
+function payonline_hcs_block_view($delta = '') {
+	if($delta == 'pay_hcs_payform_block'){
+		$block['subject'] = t('HCS payment form');
+		$block['content'] = drupal_render(drupal_get_form('payonline_hcs_payment_form'));
+	}
+	return $block;
+}
+
+/**
+ * Implements hook_forms().
+ * Need to accommodate multiple forms of payment on a single page.
+ */
+function payonline_hcs_forms($form_id, $args) {
+  $forms = array();
+  if(strpos($form_id, 'payonline_hcs_payment_form') !== false){
+    $forms[$form_id]['callback'] = 'payonline_hcs_payment_form';
+    $forms[$form_id]['callback arguments'] = $args;
+  }
+  return $forms;
+}
+
+/**
+ * Payment form.
+ * $barcode - associative array with barcode and barcode num
+ * */
+function payonline_hcs_payment_form($form, &$form_state){
+	global $user,$month,$mesArr;
+	$rubl = '<img alt="rubl" height="10" src="'.AP_PAYONLINE_PATH_MODULE.'/images/rubl.gif" />';
+	
+	if(empty($form_state['storage']['page'])){$form_state['storage']['page']=1;}
+	$page = (int)$form_state['storage']['page'];
+	
+	$form = array();
+	
+	switch($page){
+		case 1:
+			$form['pay_hcs_lc_fkey'] = array(
+				'#type' => 'textfield',
+				'#title' => t('Personal account number'),
+				'#required' => TRUE,
+				'#weight' => 1,
+				'#default_value' => !empty($form_state['values']['pay_hcs_lc_fkey']) ? $form_state['values']['pay_hcs_lc_fkey'] : '',
+			);
+			
+			if(AK_PAY_ONL_HCSCHECK_FLAT > 0){
+				$form['pay_hcs_room_flats'] = array(
+					'#type' => 'textfield',
+					'#title' => t('Room flats'),
+					'#required' => TRUE,
+					'#weight' => 2,
+					'#default_value' => !empty($form_state['values']['pay_hcs_room_flats']) ? $form_state['values']['pay_hcs_room_flats'] : '',
+				);
+			}
+			
+			$form['pay_hcs_sum'] = array(
+				'#type' => 'textfield',
+				'#title' => t('Sum'),
+				'#required' => TRUE,
+				'#weight' => 3,
+				'#default_value' => !empty($form_state['values']['pay_hcs_sum']) ? $form_state['values']['pay_hcs_sum'] : '',
+			);
+			
+			$insArr = array(t('No'));
+			
+			
+			if(AK_PAY_ONL_HCSI_HOME > 0){
+				$insArr[1] = t('Home insurance').' (+<strong>'.AK_PAY_ONL_HCSI_HOME.'</strong>'.$rubl.')';
+			}
+			
+			if(AK_PAY_ONL_HCSI__LIABILITY > 0){
+				$insArr[2] = t('Third party liability insurance').' (+<strong>'.AK_PAY_ONL_HCSI__LIABILITY.'</strong>'.$rubl.')';
+			}
+			
+			if(AK_PAY_ONL_HCSI___FULL > 0){
+				$insArr[3] = t('Full insurance').' (+<strong>'.AK_PAY_ONL_HCSI___FULL.'</strong>'.$rubl.')';
+			}
+			$insArr[4] = t('Manually');
+			
+			$form['pay_hcs_strah'] = array(
+				'#type' => 'radios',
+				'#title' => t('Insurance'),
+				'#weight' => 4,
+				'#options' => $insArr,
+				'#default_value' => !empty($form_state['values']['pay_hcs_strah']) ? $form_state['values']['pay_hcs_strah'] : 0,
+				'#description' => t('If choose "Manually", then Insurance type will be "Full".'),
+				'#ajax' => array(
+					'callback' => 'payonline_hcs_is_data_callback',
+					'wrapper' => 'user-data-wrapper',
+					'event' => 'change',
+					'method' => 'replace',
+				),
+			);
+			
+			$form['pay_hcs_user_strah']=array(
+				'#prefix' => '<div id="user-data-wrapper">',
+				'#suffix' => '</div>',
+				'#weight' => 7,
+			);
+			
+			if(isset($form_state['input']['pay_hcs_strah']) and $form_state['input']['pay_hcs_strah'] == 4){
+				$form['pay_hcs_user_strah'] = array(
+					'#type' => 'textfield',
+					'#title' => t('Insurance sum'),
+					'#required' => TRUE,
+					'#prefix' => '<div id="user-data-wrapper">',
+					'#suffix' => '</div>',
+					'#default_value' => !empty($form_state['values']['pay_hcs_user_strah']) ? $form_state['values']['pay_hcs_user_strah'] : '',
+					'#weight' => 7,
+				);
+			}
+			
+			$form['pay_hcs_peni'] = array(
+				'#type' => 'textfield',
+				'#title' => t('Peni'),
+				'#default_value' => !empty($form_state['values']['pay_hcs_peni']) ? $form_state['values']['pay_hcs_peni'] : '',
+				'#weight' => 8,
+			);
+			
+			$form['redirect'] = FALSE;
+			$form['submit'] = array(
+				'#type' => 'submit',
+				'#value' => t('Next'),
+				'#weight' => 10,
+			);
+		break;
+		//~ Step 2
+		case 2:
+			$addr 	= array();
+			$fls 	= $form_state['storage']['values']['pay_hcs_lc_fkey'];
+			$flat	= $form_state['storage']['values']['pay_hcs_room_flats'];
+			
+			$secKeyArr	= array();
+			$strahArr	= array(
+				'0' => 0,
+				'1' => AK_PAY_ONL_HCSI_HOME,
+				'2' => AK_PAY_ONL_HCSI__LIABILITY,
+				'3' => AK_PAY_ONL_HCSI___FULL,
+				'4' => (float)payonline_hcs_isset_var($form_state['storage']['values']['pay_hcs_user_strah']),
+			);
+			
+			$order_id 	= $form_state['storage']['values']['pay_hcs_order_id'];
+			$sum 		= (float)$form_state['storage']['values']['pay_hcs_sum'];
+			$sum100 	= $sum;
+			$peni 		= (float)$form_state['storage']['values']['pay_hcs_peni'];
+			$strahSum 	= (float)$strahArr[$form_state['storage']['values']['pay_hcs_strah']];
+			$sum 		+= $strahSum;
+			$sum 		+= $peni;
+			
+			if($sum100 <= 0){
+				return $form;
+			}
+			
+			if($sum > 30000){
+				$sum = round((30000*100)/(100+AK_PAY_ONL_HCS____COMMISS),2);
+				drupal_set_message(t('Amount does not exceed 30 000.'), 'warning', FALSE);
+			}
+			
+			$paySummProc 	= 0;
+			$summWithProc 	= $sum;
+				
+			if(AK_PAY_ONL_HCS_____OFF_NODE_ID == 0 or ((bool)AK_PAY_ONL_HCS__PRIV_SEC_KEY === false)){
+				$form['pay_hcs_error']=array(
+					'#type' => 'item',
+					'#title' => t('Making payments is impossible.'),
+					'#markup' => t('Contact the site administrator.'),
+					'#weight' => 2,
+				);
+				return $form;
+			}
+			
+			if(AK_PAY_ONL_HCS____COMMISS > 0){
+				$proc = (float)AK_PAY_ONL_HCS____COMMISS/100;
+				$paySummProc = round($sum*$proc,2);
+				$summWithProc = $sum+$paySummProc;
+			}
+			$ordDesc		= t('Payment of charges HCS for personal account number %pan, sum %sum.', array('%pan'=>$fls, '%sum'=>$sum));
+			
+			if($sum100 > 0){
+				$form['pay_hcs_sum_detail']=array(
+					'#markup' => t('Sum').': <strong>'.$sum100.'</strong>'.$rubl.'. ',
+					'#weight' => 4,
+				);
+			}
+			
+			if($strahSum > 0){
+				$form['pay_hcs_sum_detail']['#markup'] .= t('Insurance').': <strong>'.$strahSum.'</strong>'.$rubl.'. ';
+			}
+			
+			if($peni > 0){
+				$form['pay_hcs_sum_detail']['#markup'] .= t('Peni').': <strong>'.$peni.'</strong>'.$rubl.'.';
+			}
+			
+			$arrForm = array(
+				/*
+				 * The required parameters
+				 * */
+				'MerchantId' => AK_PAY_ONL_HCS_MID,
+				'OrderId' => $order_id,
+				'Amount' => number_format((float)$summWithProc, 2, '.', ''),
+				'Currency' => 'RUB',
+				/*
+				 * Optional parameters
+				 * */
+				'OrderDescription' => strip_tags($ordDesc),// Max length - 100 symbols 
+				//~ 'ReturnUrl' => htmlspecialchars('http://alcom-konsalt.ru/payonline-hcs/view-payment'),
+			);
+			
+			foreach($arrForm as $key=>$val2){
+				$form[$key] = array(
+					'#type' => 'hidden',
+					'#value' => $val2,
+				);
+				$secKeyArr[] = $key.'='.$val2;
+			}
+			unset($key,$val2);
+			
+			$secKeyArr[] = 'PrivateSecurityKey='.AK_PAY_ONL_HCS__PRIV_SEC_KEY;
+			
+			$secKey = md5(implode('&', $secKeyArr));
+			
+			$arrForm = array(
+				'pay_hcs_uid' => $user->uid,
+				'pay_hcs_commis' => AK_PAY_ONL_HCS____COMMISS,
+				'pay_hcs_peni' => $peni,
+				'pay_hcs_home_insurance' => 0,
+				'pay_hcs_liability_insurance' => 0,
+				'pay_hcs_full_insurance' => 0,
+			);
+			
+			//~ To break the types of insurance
+			switch($form_state['storage']['values']['pay_hcs_strah']){
+				case 1:
+					$arrForm['pay_hcs_home_insurance'] = $strahSum;
+				break;
+				case 2:
+					$arrForm['pay_hcs_liability_insurance'] = $strahSum;
+				break;
+				case 3: case 4:
+					$arrForm['pay_hcs_full_insurance'] = $strahSum;
+				break;
+			}
+			
+			foreach($arrForm as $key=>$val){
+				$form[$key] = array(
+					'#type' => 'hidden',
+					'#value' => $val,
+				);
+			}unset($key,$val);
+			
+			$form['SecurityKey'] = array(
+				'#type' => 'hidden',
+				'#value' => $secKey,
+			);
+			
+			$form['pay_hcs_fls_number']=array(
+				'#type' => 'item',
+				'#title' => t('Personal account number').':',
+				'#markup' => $fls,
+				'#weight' => 0,
+			);
+			
+			$form['pay_hcs_afert']=array(
+				'#type' => 'checkbox',
+				'#title' => l(t('I have read and agree with the terms of the public offer'), 'node/'.AK_PAY_ONL_HCS_____OFF_NODE_ID),
+				'#required' => TRUE,
+				'#weight' => 10,
+				//~ '#default_value' => 1,
+			);
+			 
+			$form['submit'] = array(
+					'#type' => 'submit',
+					'#value' => t('Pay it').'
+'.$summWithProc,
+					'#attributes'=> array('class'=>array('pay-button')),
+					'#weight' => 20,
+			);
+			
+			if(AK_PAY_ONL_HCS____COMMISS > 0){
+				$form['submit']['#value'] .= '*';
+				$form['submit']['#suffix'] = '<br /><label for="payonline-hcs-submit-button">*'.t('Comission').'&nbsp;'.AK_PAY_ONL_HCS____COMMISS.'% - <strong>'.$paySummProc.'</strong>.</label>';
+			}
+		break;
+	}
+
+	return $form;
+}
+function payonline_hcs_payment_form_validate($form, &$form_state) {
+	$addr 	= array();
+	$fls 	= payonline_hcs_isset_var($form_state['values']['pay_hcs_lc_fkey']);
+	$flat	= payonline_hcs_isset_var($form_state['values']['pay_hcs_room_flats']);
+	
+	if(AK_PAY_ONL_HCSCHECK_FLAT > 0){
+		try{
+			$addr = db_select('payonline_hcs_pan_flats', 'ch')
+			->fields('ch', array('id'))
+			->condition('pf_lc_fkey', check_plain(trim($fls)))
+			->condition('pf_flat', check_plain(trim($flat)))
+			->range(0,1)
+			->execute()->fetchAssoc();
+		}
+		catch(Exception $e){
+			watchdog_exception('payonline-hcs-error', $e);
+			drupal_set_message('Error. More information in '.l('syslog','admin/reports/dblog').'.<br />'.$e->getMessage(), 'error', FALSE);
+			return false;
+		}
+	}
+	
+	if(empty($addr) and AK_PAY_ONL_HCSCHECK_FLAT > 0){
+		form_set_error('pay_hcs_lc_fkey', t('Personal account number does not match with the number of flats.'));
+	}
+}
+/**
+ * Ajax function for choose type field
+ * */
+function payonline_hcs_is_data_callback($form, $form_state){
+	return $form['pay_hcs_user_strah'];
+}
+
+function payonline_hcs_payment_form_submit($form, &$form_state){
+	global $user;
+	
+	$form_state['rebuild'] = TRUE;
+	$page = $form_state['storage']['page'];
+	$lcocs = array();
+
+	if($page == 1){
+		$form_state['storage']['values'] = $form_state['values'];
+		$form_state['storage']['values']['pay_hcs_order_id'] = isset($form_state['storage']['values']['pay_hcs_order_id']) ? $form_state['storage']['values']['pay_hcs_order_id'] : payonline_hcs_generate_order_id();
+		$form_state['storage']['page']++;
+	}
+	if($page == 2){
+		//Remove unneeded data
+		$form_state['values'] 	= array_merge($form_state['values'],$form_state['storage']['values']);
+		form_state_values_clean($form_state);
+		unset($form_state['values']['pay_hcs_afert']);
+		unset($form_state['values']['pay_hcs_sum']);
+		unset($form_state['values']['pay_hcs_order_id']);
+		unset($form_state['values']['pay_hcs_strah']);
+		unset($form_state['values']['pay_hcs_user_strah']);
+		unset($form_state['values']['pay_hcs_room_flats']);
+		unset($form_state['values']['submit']);
+		//~ debug($form_state['values']);
+		drupal_goto(url(AK_PAY_ONL_HCS___PAGE), array('query'=>$form_state['values']));
+	}
+}
+/**
+ * Implementation of hook_help().
+ */
+function payonline_hcs_help($path) {
+  switch ($path) {
+    case 'admin/payonline_hcs/configure/import':
+		return t('This handbook required for additional verify of personal account number input.');
+	break;
+  }
+}
+
+function payonline_hcs_isset_var(&$var, $newVal = false){
+	if(!isset($var)){
+		$var = '';
+	}
+	if($newVal and isset($var) and empty($var)){
+		$var = $newVal;
+	}
+	return $var;
+}
+
+function payonline_hcs_check_fls_access($fls){
+	global $user;
+	//~ Check whether the user has access to the specified account
+	$ch_fls		= explode(",", payonline_hcs_isset_var($user->data['alcom_konsalt_lc_fkey']));
+	
+	$chPoint	= false;
+	
+	if(sizeof($ch_fls) and in_array($fls, $ch_fls)){
+		$chPoint = true;
+	}
+	unset($key,$val);
+	
+	if(!$chPoint){
+		drupal_set_message(t("You do not have access to that personal account."), 'error', FALSE); return false;
+	}
+	
+	return true;
+}
+
+
+/**
+ * Generate Order ID
+ * */
+function payonline_hcs_generate_order_id($out=''){
+	$ip = explode('.', $_SERVER['REMOTE_ADDR']);
+	$suff = ((int)$ip[0]+(int)end($ip))+(rand(155,775));
+	$uuid = preg_replace('/[a-z]|[A-Z]/', '', uniqid());
+	$arrUuid = str_split($uuid);
+
+	foreach($arrUuid as $key=>$val){
+		if(($key % 4) == 3){
+			array_splice($arrUuid, $key, 0, '-');
+		}
+	}
+	$out = implode('', $arrUuid);
+	$out .= '/'.(int)($suff/rand(1,9));
+	return $out;
+}

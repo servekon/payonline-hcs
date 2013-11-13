@@ -1,0 +1,146 @@
+<?php
+// $Id: payonline_hcs.install,v 1.0. 2013/11/02 00:46:36 servekon Exp $
+
+/**
+ * Implementation of hook_install()
+ */
+function payonline_hcs_install() {
+	cache_clear_all();
+}
+
+/**
+ * Implementation of hook_uninstall()
+ */
+function payonline_hcs_uninstall() {
+	variable_del('payonline_hcs_mid');
+	variable_del('payonline_hcs_private_key');
+	cache_clear_all();
+}
+	
+/**
+ * Implementation of hook_schema()
+ * @return array of Schema API table definitions.
+ */
+function payonline_hcs_schema() {
+    //Payments
+	$schema['payonline_hcs_payments'] = array(
+        'fields' => array(
+            'id' => array('type' => 'serial', 'size' => 'big', 'not null' => TRUE, 
+                'description'=> "Payment ID"),
+			'uid' => array('type' => 'int', 'size' => 'big', 'not null' => TRUE, 
+                'description'=> "User ID"),
+            'lcoc_key' => array('type' => 'varchar', 'size' => 'normal', 'not null' => TRUE, 'length' => 50,
+                'description'=> "Order id"),
+			'lc_fkey' => array('type' => 'varchar', 'size' => 'normal', 'not null' => TRUE, 'length' => 50, 
+                'description'=> "Account number(full)"),
+            'date_adoption_payment_in_payonline' => array('mysql_type' => 'datetime', 'default' => '1970-01-01', 'not null' => TRUE,
+                'description'=> "Date adoption payment in Payonline system"),
+            'date_adoption_payment' => array('type' => 'datetime', 'mysql_type' => 'datetime', 'default' => '1970-01-01', 'not null' => TRUE,
+                'description'=> "Date of adoption of payment"),
+            'date_export_payment' => array('type' => 'datetime', 'mysql_type' => 'datetime', 'default' => '1970-01-01', 'not null' => TRUE,
+                'description'=> "Discharge date payment"),
+            'date_added_payment_to_pack' => array('type' => 'datetime', 'mysql_type' => 'datetime', 'default' => '1970-01-01', 'not null' => TRUE,
+                'description'=> "Discharge date payment by pack of payment"),
+            'currency' => array('type' => 'varchar', 'size' => 'normal', 'not null' => TRUE, 'length' => 10,
+                'description'=> "Currency"),
+            'provider' => array('type' => 'varchar', 'size' => 'normal', 'not null' => TRUE, 'length' => 72,
+                'description'=> "Payment tool(Card,Qiwi,WebMoney, YandexMoney etc.)"),
+            'merchant_id' => array('type' => 'varchar', 'size' => 'normal', 'not null' => TRUE, 'length' => 72,
+                'description'=> "Store ID in the system payonline"),
+            'transaction' => array('type' => 'int', 'size' => 'big', 'default' => 0, 'not null' => TRUE, 
+                'description'=> "Transaction number from payonline"),
+            'summ' => array('type' => 'float', 'size' => 'normal', 'not null' => TRUE, 
+                'description'=> "Payment amount"),
+            'commis' => array('type' => 'float', 'size' => 'normal', 'not null' => TRUE, 
+                'description'=> "Payment commission"),
+            'home_insurance' => array('type' => 'float', 'size' => 'normal', 'default' => 0, 'not null' => TRUE,
+                'description'=> "Home insurance"),
+            'liability_insurance' => array('type' => 'float', 'size' => 'normal', 'default' => 0, 'not null' => TRUE, 
+                'description'=> "Third party liability insurance"),    
+            'full_insurance' => array('type' => 'float', 'size' => 'normal', 'default' => 0, 'not null' => TRUE, 
+                'description'=> "Full insurance(Home and Third party liability insurance)"),    
+            'peni' => array('type' => 'float', 'size' => 'normal', 'default' => 0, 'not null' => TRUE, 
+                'description'=> "Peni"),    
+			'payment_adopted_status' => array('type' => 'int', 'size' => 'small', 'default' => 0, 'not null' => TRUE, 
+                'description'=> "Payment order is accepted or not"),
+			'status_payment' => array('type' => 'int', 'size' => 'small', 'default' => 0, 'not null' => TRUE, 
+				'description'=> "Payment status. 0 - not discharged. 1 - discharged. Need for packs."),
+			'dateizm' => array('type' => 'datetime','mysql_type' => 'timestamp', 'not null' => TRUE, 'description'=> "Date of change"),
+        ),
+        'indexes' => array('uid'=>array('uid'),'lc_fkey'=>array('lc_fkey')),
+		'primary key' => array('id') 
+    );
+	
+	//Registry payments
+	$schema['payonline_hcs_payments_reestr'] = array(
+        'fields' => array(
+            'id' => array('type' => 'serial', 'size' => 'big', 'not null' => TRUE, 
+                'description'=> "Payment ID"),
+            'pr_lcoc_key' => array('type' => 'varchar', 'size' => 'normal', 'not null' => TRUE, 'length' => 50,
+                'description'=> "Order id"),
+			'pr_lc_fkey' => array('type' => 'varchar', 'size' => 'normal', 'not null' => TRUE, 'length' => 55,
+                'description'=> "Account number(full)"),
+            'pack_id' => array('type' => 'int', 'size' => 'big', 'not null' => TRUE, 
+                'description'=> "Packs ID"),
+            'pr_merchant_id' => array('type' => 'varchar', 'size' => 'normal', 'not null' => TRUE, 'length' => 72,
+                'description'=> "Store ID in the system payonline"),
+            'pr_transaction' => array('type' => 'int', 'size' => 'big', 'default' => 0, 'not null' => TRUE, 
+                'description'=> "Transaction number from payonline"),
+            'pr_date_adoption_payment' => array('type' => 'datetime', 'mysql_type' => 'datetime', 'default' => '1970-01-01', 'not null' => TRUE,
+                'description'=> "Date of adoption of payment"),
+            'pr_date_adoption_payment_in_payonline' => array('mysql_type' => 'datetime', 'default' => '1970-01-01', 'not null' => TRUE,
+                'description'=> "Date adoption payment in Payonline system"),
+            'pr_summ' => array('type' => 'float', 'size' => 'normal', 'not null' => TRUE, 
+                'description'=> "Payment amount"),
+            'pr_commis' => array('type' => 'float', 'size' => 'normal', 'not null' => TRUE, 
+                'description'=> "Payment commission"),
+            'pr_home_insurance' => array('type' => 'float', 'size' => 'normal', 'default' => 0, 'not null' => TRUE,
+                'description'=> "Home insurance"),
+            'pr_liability_insurance' => array('type' => 'float', 'size' => 'normal', 'default' => 0, 'not null' => TRUE, 
+                'description'=> "Third party liability insurance"),    
+            'pr_full_insurance' => array('type' => 'float', 'size' => 'normal', 'default' => 0, 'not null' => TRUE, 
+                'description'=> "Full insurance(Home and Third party liability insurance)"),    
+            'pr_peni' => array('type' => 'float', 'size' => 'normal', 'default' => 0, 'not null' => TRUE, 
+                'description'=> "Peni"),    
+			'dateizm' => array('type' => 'datetime','mysql_type' => 'timestamp', 'not null' => TRUE, 'description'=> "Date of change"),
+        ),
+        'indexes' => array('pr_lc_fkey'=>array('pr_lc_fkey'),'pack_id'=>array('pack_id')),
+		'primary key' => array('id') 
+    );
+	
+	//Payments packs
+	$schema['payonline_hcs_payments_packs'] = array(
+        'fields' => array(
+            'id' => array('type' => 'serial', 'size' => 'big', 'not null' => TRUE, 
+                'description'=> "Payment pack ID"),
+			'pp_operating_day' => array('mysql_type' => 'date', 'default' => '1970-01-01', 'not null' => TRUE,
+                'description'=> "Operating day"),
+            'pp_pack_num' =>  array('type' => 'varchar', 'size' => 'normal', 'not null' => TRUE, 'length' => 75,
+                'description'=> "Number pack"),
+            'pp_summ' => array('type' => 'float', 'size' => 'big', 'not null' => TRUE, 
+                'description'=> "Payment amount"),
+			'pp_number_payments' => array('type' => 'int', 'size' => 'normal', 'default' => 0, 'not null' => TRUE, 
+                'description'=> "Number of payments"),
+			'dateizm' => array('type' => 'datetime','mysql_type' => 'timestamp', 'not null' => TRUE, 'description'=> "Date of change"),
+        ),
+        'indexes' => array('pp_pack_num'=>array('pp_pack_num'),'pp_operating_day'=>array('pp_operating_day')),
+		'primary key' => array('id')
+    );
+	
+	//~ To check the correctness of personal account number entry
+	$schema['payonline_hcs_pan_flats'] = array(
+        'fields' => array(
+            'id' => array('type' => 'serial', 'size' => 'big', 'not null' => TRUE, 
+                'description'=> "Payment pack ID"),
+			'pf_lc_fkey' =>  array('type' => 'varchar', 'size' => 'normal', 'not null' => TRUE, 'length' => 75,
+                'description'=> "Personal account number"),
+			'pf_flat' =>  array('type' => 'varchar', 'size' => 'normal', 'not null' => TRUE, 'length' => 10,
+                'description'=> "Flat number"),
+			'dateizm' => array('type' => 'datetime','mysql_type' => 'timestamp', 'not null' => TRUE, 'description'=> "Date of change"),
+        ),
+        'indexes' => array('pf_lc_fkey'=>array('pf_lc_fkey'),'pf_flat'=>array('pf_flat')),
+		'primary key' => array('id')
+    );
+	
+	return $schema;
+}
