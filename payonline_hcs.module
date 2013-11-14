@@ -543,7 +543,7 @@ function payonline_hcs_payment_form_validate($form, &$form_state) {
 		}
 		catch(Exception $e){
 			watchdog_exception('payonline-hcs-error', $e);
-			drupal_set_message('Error. More information in '.l('syslog','admin/reports/dblog').'.<br />'.$e->getMessage(), 'error', FALSE);
+			drupal_set_message('Error. More information in '.l('syslog','admin/reports/dblog').'.<br />'.check_plain($e->getMessage()), 'error', FALSE);
 			return false;
 		}
 	}

@@ -210,7 +210,7 @@ function payonline_hcs_viewpayment($form = array(), &$form_state){
 	}
 	catch(Exception $e){
 		watchdog_exception('payonline-hcs-error', $e);
-		drupal_set_message('Error. More information in '.l('syslog','admin/reports/dblog').'.<br />'.$e->getMessage(), 'error', FALSE);
+		drupal_set_message('Error. More information in '.l('syslog','admin/reports/dblog').'.<br />'.check_plain($e->getMessage()), 'error', FALSE);
 		return $form;
 	}
 	$noBalans = 0;
@@ -336,7 +336,7 @@ function payonline_hcs_add_pack_form_submit($form, &$form_state){
 		}
 		catch(Exception $e){
 			watchdog_exception('payonline-hcs-error', $e);
-			drupal_set_message('Error. More information in '.l('syslog','admin/reports/dblog').'.<br />'.$e->getMessage(), 'error', FALSE);
+			drupal_set_message('Error. More information in '.l('syslog','admin/reports/dblog').'.<br />'.check_plain($e->getMessage()), 'error', FALSE);
 			return false;
 		}
 	}
@@ -352,7 +352,7 @@ function payonline_hcs_avaliable_payments_for_packs(&$countPay, &$summ){
 	}
 	catch(Exception $e){
 		watchdog_exception('payonline-hcs-error', $e);
-		drupal_set_message('Error. More information in '.l('syslog','admin/reports/dblog').'.<br />'.$e->getMessage(), 'error', FALSE);
+		drupal_set_message('Error. More information in '.l('syslog','admin/reports/dblog').'.<br />'.check_plain($e->getMessage()), 'error', FALSE);
 		return false;
 	}
 	
@@ -394,7 +394,7 @@ function payonline_hcs_add_new_pack($operDay, $packNum, $packSum, $packCount){
 	}
 	catch(Exception $e){
 		watchdog_exception('payonline-hcs-error', $e);
-		drupal_set_message('Error. More information in '.l('syslog','admin/reports/dblog').'.<br />'.$e->getMessage(), 'error', FALSE);
+		drupal_set_message('Error. More information in '.l('syslog','admin/reports/dblog').'.<br />'.check_plain($e->getMessage()), 'error', FALSE);
 		return 0;
 	}
 }
@@ -432,7 +432,7 @@ function payonline_hcs_viewpacks(){
 	}
 	catch(Exception $e){
 		watchdog_exception('payonline-hcs-error', $e);
-		drupal_set_message('Error. More information in '.l('syslog','admin/reports/dblog').'.<br />'.$e->getMessage(), 'error', FALSE);
+		drupal_set_message('Error. More information in '.l('syslog','admin/reports/dblog').'.<br />'.check_plain($e->getMessage()), 'error', FALSE);
 		return '';
 	}
 	
@@ -501,7 +501,7 @@ function payonline_hcs_viewreestrpack($packId = 0){
 	}
 	catch(Exception $e){
 		watchdog_exception('payonline-hcs-error', $e);
-		drupal_set_message('Error. More information in '.l('syslog','admin/reports/dblog').'.<br />'.$e->getMessage(), 'error', FALSE);
+		drupal_set_message('Error. More information in '.l('syslog','admin/reports/dblog').'.<br />'.check_plain($e->getMessage()), 'error', FALSE);
 		return '';
 	}
 	$noBalans = 0;
@@ -576,7 +576,7 @@ function payonline_hcs_export_pack($packId = 0){
 	}
 	catch(Exception $e){
 		watchdog_exception('payonline-hcs-error', $e);
-		drupal_set_message('Error. More information in '.l('syslog','admin/reports/dblog').'.<br />'.$e->getMessage(), 'error', FALSE);
+		drupal_set_message('Error. More information in '.l('syslog','admin/reports/dblog').'.<br />'.check_plain($e->getMessage()), 'error', FALSE);
 		return '';
 	}
 }
@@ -669,7 +669,7 @@ function payonline_hcs_export_by_date_form_submit($form, &$form_state){
 	}
 	catch(Exception $e){
 		watchdog_exception('payonline-hcs-error', $e);
-		drupal_set_message('Error. More information in '.l('syslog','admin/reports/dblog').'.<br />'.$e->getMessage(), 'error', FALSE);
+		drupal_set_message('Error. More information in '.l('syslog','admin/reports/dblog').'.<br />'.check_plain($e->getMessage()), 'error', FALSE);
 		return '';
 	}
 }
@@ -740,7 +740,7 @@ function payonline_hcs_fill_pan_flats_form_submit($form, $form_state) {
 	}
 	catch(Exception $e){
 		watchdog_exception('payonline-hcs-error', $e);
-		drupal_set_message('Error when fill table. More information in '.l('syslog','admin/reports/dblog').'.<br />'.$e->getMessage(), 'error', FALSE); return false;
+		drupal_set_message('Error when fill table. More information in '.l('syslog','admin/reports/dblog').'.<br />'.check_plain($e->getMessage()), 'error', FALSE); return false;
 	}
 }
 
