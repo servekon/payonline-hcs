@@ -523,7 +523,7 @@ function payonline_hcs_payment_form($form, &$form_state){
 			}
 		break;
 	}
-
+	$form['#action'] = url('payonline-hcs/make-payment');
 	return $form;
 }
 function payonline_hcs_payment_form_validate($form, &$form_state) {
