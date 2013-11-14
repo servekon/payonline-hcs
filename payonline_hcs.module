@@ -267,7 +267,7 @@ function payonline_hcs_forms($form_id, $args) {
  * */
 function payonline_hcs_payment_form($form, &$form_state){
 	global $user,$month,$mesArr;
-	$rubl = '<img alt="rubl" height="10" src="'.AP_PAYONLINE_PATH_MODULE.'/images/rubl.gif" />';
+	$rubl = '<img alt="rubl" style="height: 10px;" src="'.AP_PAYONLINE_PATH_MODULE.'/images/rubl.gif" />';
 	
 	if(empty($form_state['storage']['page'])){$form_state['storage']['page']=1;}
 	$page = (int)$form_state['storage']['page'];
