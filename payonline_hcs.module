@@ -318,7 +318,15 @@ function payonline_hcs_payment_form($form, &$form_state){
 			}
 			$insArr[4] = t('Manually');
 			
-			$form['pay_hcs_strah'] = array(
+			$form['pay_hcs_strah_fieldset'] = array(
+			  '#type' => 'fieldset',
+			  '#title' => t('Insurance'),
+			  '#weight' => 4,
+			  '#collapsible' => TRUE,
+			  '#collapsed' =>TRUE,
+			);
+			
+			$form['pay_hcs_strah_fieldset']['pay_hcs_strah'] = array(
 				'#type' => 'radios',
 				'#title' => t('Insurance'),
 				'#weight' => 4,
