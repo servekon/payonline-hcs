@@ -530,8 +530,9 @@ function payonline_hcs_payment_form_validate($form, &$form_state) {
 	$addr 	= array();
 	$fls 	= payonline_hcs_isset_var($form_state['values']['pay_hcs_lc_fkey']);
 	$flat	= payonline_hcs_isset_var($form_state['values']['pay_hcs_room_flats']);
+	$page = (int)$form_state['storage']['page'];
 	
-	if(AK_PAY_ONL_HCSCHECK_FLAT > 0){
+	if(AK_PAY_ONL_HCSCHECK_FLAT > 0 and $page == 1){
 		try{
 			$addr = db_select('payonline_hcs_pan_flats', 'ch')
 			->fields('ch', array('id'))
@@ -547,7 +548,7 @@ function payonline_hcs_payment_form_validate($form, &$form_state) {
 		}
 	}
 	
-	if(empty($addr) and AK_PAY_ONL_HCSCHECK_FLAT > 0){
+	if(empty($addr) and AK_PAY_ONL_HCSCHECK_FLAT > 0 and $page == 1){
 		form_set_error('pay_hcs_lc_fkey', t('Personal account number does not match with the number of flats.'));
 	}
 }
