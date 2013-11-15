@@ -1,6 +1,4 @@
 <?php
-// $Id: payonline_hcs.admin.inc,v 1.0 2013/10/02 00:55:12 servekon Exp $
-
 /**
  * @file payonline_hcs.admin.inc
  * Functions that are only called on the admin pages.
@@ -16,14 +14,14 @@ function payonline_hcs_admin() {
  	$form['payonline_hcs_mid'] = array(
 		'#type' => 'textfield',
 		'#title' => t('Merchant ID exchange system Payonline'),
-		'#default_value' => AK_PAY_ONL_HCS_MID,
+		'#default_value' => variable_get('payonline_hcs_mid', ''),
 		'#attributes'	=> array('autocomplete'=>array('off')),
     );
  	
  	$form['payonline_hcs_private_key'] = array(
 		'#type' => 'textfield',
 		'#title' => t('Secret key exchange system Payonline'),
-		'#default_value' => AK_PAY_ONL_HCS__PRIV_SEC_KEY,
+		'#default_value' => variable_get('payonline_hcs_private_key', ''),
 		'#attributes'	=> array('autocomplete'=>array('off')),
     );
  	$form['payonline_hcs_form_payment_page'] = array(
@@ -36,14 +34,14 @@ function payonline_hcs_admin() {
 			'https://secure.payonlinesystem.com/'.$lng.'/payment/select/yandexmoney/' => 'YandexMoney',
 			'https://secure.payonlinesystem.com/'.$lng.'/payment/' => t('Form of payment by credit card'),
 		),
-		'#default_value' => AK_PAY_ONL_HCS___PAGE,
+		'#default_value' => variable_get('payonline_hcs_form_payment_page', 'https://secure.payonlinesystem.com/ru/payment/select/'),
     );
     
     $form['payonline_hcs_commission'] = array(
 		'#type' => 'textfield',
 		'#title' => t('Commission fee charged to users').'(%)',
 		'#description' => t('If a user fee is not charged, the commission should be 0(zero)'),
-		'#default_value' => AK_PAY_ONL_HCS____COMMISS,
+		'#default_value' => variable_get('payonline_hcs_commission', 0),
     );
     
     $form['payonline_hcs_use_handbook_verify'] = array(
@@ -56,25 +54,25 @@ function payonline_hcs_admin() {
     $form['payonline_hcs_home_insurance'] = array(
 		'#type' => 'textfield',
 		'#title' => t('Home insurance'),
-		'#default_value' => AK_PAY_ONL_HCSI_HOME,
+		'#default_value' => variable_get('payonline_hcs_home_insurance', 0),
     );
     
     $form['payonline_hcs_liability_insurance'] = array(
 		'#type' => 'textfield',
 		'#title' => t('Third party liability insurance'),
-		'#default_value' => AK_PAY_ONL_HCSI__LIABILITY,
+		'#default_value' => variable_get('payonline_hcs_liability_insurance', 0),
     );
     
     $form['payonline_hcs_full_insurance'] = array(
 		'#type' => 'textfield',
 		'#title' => t('Full insurance'),
-		'#default_value' => AK_PAY_ONL_HCSI___FULL,
+		'#default_value' => variable_get('payonline_hcs_full_insurance', 0),
     );
     
     $form['payonline_hcs_offer_node_id'] = array(
 		'#type' => 'textfield',
 		'#title' => t('Node ID with contract offer'),
-		'#default_value' => AK_PAY_ONL_HCS_____OFF_NODE_ID,
+		'#default_value' => variable_get('payonline_hcs_offer_node_id', 0),
     );
 		
 	return system_settings_form($form);

@@ -1,30 +1,5 @@
 <?php
-// $Id: payonline_hcs.module,v 1.0 2013/11/02 00:55:25 servekon Exp $
-
-$payOnlMid	 		= (string)check_plain(variable_get('payonline_hcs_mid', ''));
-$payOnlPrivSecKey 	= (string)check_plain(variable_get('payonline_hcs_private_key', ''));
-$payOnlPage 		= (string)check_plain(variable_get('payonline_hcs_form_payment_page', 'https://secure.payonlinesystem.com/ru/payment/select/'));
-$payOnlCommiss 		= (float)variable_get('payonline_hcs_commission', 0);
-$payOnlStrah 		= (float)variable_get('payonline_hcs_home_insurance', 0);
-$payOnlLiability	= (float)variable_get('payonline_hcs_liability_insurance', 0);
-$payOnlFullStrah 	= (float)variable_get('payonline_hcs_full_insurance', 0);
-$payOnlOffNode		= (int)variable_get('payonline_hcs_offer_node_id', 0);
-$payOnlCheckFlat	= (int)variable_get('payonline_hcs_use_handbook_verify', 0);
-
 define('AP_PAYONLINE_PATH_MODULE', (string)base_path().drupal_get_path('module', 'payonline_hcs'));
-
-define('AK_PAY_ONL_HCS_MID', $payOnlMid);
-define('AK_PAY_ONL_HCS__PRIV_SEC_KEY', $payOnlPrivSecKey);
-define('AK_PAY_ONL_HCS___PAGE', $payOnlPage);
-define('AK_PAY_ONL_HCS____COMMISS', $payOnlCommiss);
-define('AK_PAY_ONL_HCS_____OFF_NODE_ID', $payOnlOffNode);
-
-define('AK_PAY_ONL_HCSI_HOME', $payOnlStrah);
-define('AK_PAY_ONL_HCSI__LIABILITY', $payOnlLiability);
-define('AK_PAY_ONL_HCSI___FULL', $payOnlFullStrah);
-
-define('AK_PAY_ONL_HCSCHECK_FLAT', $payOnlCheckFlat);
-
 /**
 * Valid permissions for this module
 * @return array An array of valid permissions for the onthisdate module
@@ -200,25 +175,25 @@ function payonline_hcs_block_configure($delta=''){
 		$form['payonline_hcs_home_insurance'] = array(
 			'#type' => 'textfield',
 			'#title' => t('Home insurance'),
-			'#default_value' => AK_PAY_ONL_HCSI_HOME,
+			'#default_value' => variable_get('payonline_hcs_home_insurance', 0),
 		);
 		
 		$form['payonline_hcs_liability_insurance'] = array(
 			'#type' => 'textfield',
 			'#title' => t('Third party liability insurance'),
-			'#default_value' => AK_PAY_ONL_HCSI__LIABILITY,
+			'#default_value' => variable_get('payonline_hcs_liability_insurance', 0),
 		);
 		
 		$form['payonline_hcs_full_insurance'] = array(
 			'#type' => 'textfield',
 			'#title' => t('Full insurance'),
-			'#default_value' => AK_PAY_ONL_HCSI___FULL,
+			'#default_value' => variable_get('payonline_hcs_full_insurance', 0),
 		);
 		
 		$form['payonline_hcs_offer_node_id'] = array(
 			'#type' => 'textfield',
 			'#title' => t('Node ID with contract offer'),
-			'#default_value' => AK_PAY_ONL_HCS_____OFF_NODE_ID,
+			'#default_value' => variable_get('payonline_hcs_offer_node_id', 0),
 		);
 	}
 	return $form;
@@ -243,27 +218,12 @@ function payonline_hcs_block_save($delta = '', $edit = array()) {
 function payonline_hcs_block_view($delta = '') {
 	if($delta == 'pay_hcs_payform_block'){
 		$block['subject'] = t('HCS payment form');
-		$block['content'] = drupal_render(drupal_get_form('payonline_hcs_payment_form'));
+		$block['content'] = drupal_get_form('payonline_hcs_payment_form');
 	}
 	return $block;
 }
-
-/**
- * Implements hook_forms().
- * Need to accommodate multiple forms of payment on a single page.
- */
-function payonline_hcs_forms($form_id, $args) {
-  $forms = array();
-  if(strpos($form_id, 'payonline_hcs_payment_form') !== false){
-    $forms[$form_id]['callback'] = 'payonline_hcs_payment_form';
-    $forms[$form_id]['callback arguments'] = $args;
-  }
-  return $forms;
-}
-
 /**
  * Payment form.
- * $barcode - associative array with barcode and barcode num
  * */
 function payonline_hcs_payment_form($form, &$form_state){
 	global $user,$month,$mesArr;
@@ -284,7 +244,7 @@ function payonline_hcs_payment_form($form, &$form_state){
 				'#default_value' => !empty($form_state['values']['pay_hcs_lc_fkey']) ? $form_state['values']['pay_hcs_lc_fkey'] : '',
 			);
 			
-			if(AK_PAY_ONL_HCSCHECK_FLAT > 0){
+			if(variable_get('payonline_hcs_use_handbook_verify', 0) > 0){
 				$form['pay_hcs_room_flats'] = array(
 					'#type' => 'textfield',
 					'#title' => t('Room flats'),
@@ -305,16 +265,16 @@ function payonline_hcs_payment_form($form, &$form_state){
 			$insArr = array(t('No'));
 			
 			
-			if(AK_PAY_ONL_HCSI_HOME > 0){
-				$insArr[1] = t('Home insurance').' (+<strong>'.AK_PAY_ONL_HCSI_HOME.'</strong>'.$rubl.')';
+			if(variable_get('payonline_hcs_home_insurance', 0) > 0){
+				$insArr[1] = t('Home insurance').' (+<strong>'.variable_get('payonline_hcs_home_insurance', 0).'</strong>'.$rubl.')';
 			}
 			
-			if(AK_PAY_ONL_HCSI__LIABILITY > 0){
-				$insArr[2] = t('Third party liability insurance').' (+<strong>'.AK_PAY_ONL_HCSI__LIABILITY.'</strong>'.$rubl.')';
+			if(variable_get('payonline_hcs_liability_insurance', 0) > 0){
+				$insArr[2] = t('Third party liability insurance').' (+<strong>'.variable_get('payonline_hcs_liability_insurance', 0).'</strong>'.$rubl.')';
 			}
 			
-			if(AK_PAY_ONL_HCSI___FULL > 0){
-				$insArr[3] = t('Full insurance').' (+<strong>'.AK_PAY_ONL_HCSI___FULL.'</strong>'.$rubl.')';
+			if(variable_get('payonline_hcs_full_insurance', 0) > 0){
+				$insArr[3] = t('Full insurance').' (+<strong>'.variable_get('payonline_hcs_full_insurance', 0).'</strong>'.$rubl.')';
 			}
 			$insArr[4] = t('Manually');
 			
@@ -341,14 +301,14 @@ function payonline_hcs_payment_form($form, &$form_state){
 				),
 			);
 			
-			$form['pay_hcs_user_strah']=array(
+			$form['pay_hcs_strah_fieldset']['pay_hcs_user_strah']=array(
 				'#prefix' => '<div id="user-data-wrapper">',
 				'#suffix' => '</div>',
 				'#weight' => 7,
 			);
 			
 			if(isset($form_state['input']['pay_hcs_strah']) and $form_state['input']['pay_hcs_strah'] == 4){
-				$form['pay_hcs_user_strah'] = array(
+				$form['pay_hcs_strah_fieldset']['pay_hcs_user_strah'] = array(
 					'#type' => 'textfield',
 					'#title' => t('Insurance sum'),
 					'#required' => TRUE,
@@ -382,9 +342,9 @@ function payonline_hcs_payment_form($form, &$form_state){
 			$secKeyArr	= array();
 			$strahArr	= array(
 				'0' => 0,
-				'1' => AK_PAY_ONL_HCSI_HOME,
-				'2' => AK_PAY_ONL_HCSI__LIABILITY,
-				'3' => AK_PAY_ONL_HCSI___FULL,
+				'1' => variable_get('payonline_hcs_home_insurance', 0),
+				'2' => variable_get('payonline_hcs_liability_insurance', 0),
+				'3' => variable_get('payonline_hcs_full_insurance', 0),
 				'4' => (float)payonline_hcs_isset_var($form_state['storage']['values']['pay_hcs_user_strah']),
 			);
 			
@@ -401,14 +361,14 @@ function payonline_hcs_payment_form($form, &$form_state){
 			}
 			
 			if($sum > 30000){
-				$sum = round((30000*100)/(100+AK_PAY_ONL_HCS____COMMISS),2);
+				$sum = round((30000*100)/(100+variable_get('payonline_hcs_commission', 0)),2);
 				drupal_set_message(t('Amount does not exceed 30 000.'), 'warning', FALSE);
 			}
 			
 			$paySummProc 	= 0;
 			$summWithProc 	= $sum;
 				
-			if(AK_PAY_ONL_HCS_____OFF_NODE_ID == 0 or ((bool)AK_PAY_ONL_HCS__PRIV_SEC_KEY === false)){
+			if(variable_get('payonline_hcs_offer_node_id', 0) == 0 or ((bool)variable_get('payonline_hcs_private_key', '') === false)){
 				$form['pay_hcs_error']=array(
 					'#type' => 'item',
 					'#title' => t('Making payments is impossible.'),
@@ -418,8 +378,8 @@ function payonline_hcs_payment_form($form, &$form_state){
 				return $form;
 			}
 			
-			if(AK_PAY_ONL_HCS____COMMISS > 0){
-				$proc = (float)AK_PAY_ONL_HCS____COMMISS/100;
+			if(variable_get('payonline_hcs_commission', 0) > 0){
+				$proc = (float)variable_get('payonline_hcs_commission', 0)/100;
 				$paySummProc = round($sum*$proc,2);
 				$summWithProc = $sum+$paySummProc;
 			}
@@ -444,7 +404,7 @@ function payonline_hcs_payment_form($form, &$form_state){
 				/*
 				 * The required parameters
 				 * */
-				'MerchantId' => AK_PAY_ONL_HCS_MID,
+				'MerchantId' => variable_get('payonline_hcs_mid', ''),
 				'OrderId' => $order_id,
 				'Amount' => number_format((float)$summWithProc, 2, '.', ''),
 				'Currency' => 'RUB',
@@ -464,13 +424,13 @@ function payonline_hcs_payment_form($form, &$form_state){
 			}
 			unset($key,$val2);
 			
-			$secKeyArr[] = 'PrivateSecurityKey='.AK_PAY_ONL_HCS__PRIV_SEC_KEY;
+			$secKeyArr[] = 'PrivateSecurityKey='.variable_get('payonline_hcs_private_key', '');
 			
 			$secKey = md5(implode('&', $secKeyArr));
 			
 			$arrForm = array(
 				'pay_hcs_uid' => $user->uid,
-				'pay_hcs_commis' => AK_PAY_ONL_HCS____COMMISS,
+				'pay_hcs_commis' => variable_get('payonline_hcs_commission', 0),
 				'pay_hcs_peni' => $peni,
 				'pay_hcs_home_insurance' => 0,
 				'pay_hcs_liability_insurance' => 0,
@@ -511,7 +471,7 @@ function payonline_hcs_payment_form($form, &$form_state){
 			
 			$form['pay_hcs_afert']=array(
 				'#type' => 'checkbox',
-				'#title' => l(t('I have read and agree with the terms of the public offer'), 'node/'.AK_PAY_ONL_HCS_____OFF_NODE_ID),
+				'#title' => l(t('I have read and agree with the terms of the public offer'), 'node/'.variable_get('payonline_hcs_offer_node_id', 0)),
 				'#required' => TRUE,
 				'#weight' => 10,
 				//~ '#default_value' => 1,
@@ -525,9 +485,9 @@ function payonline_hcs_payment_form($form, &$form_state){
 					'#weight' => 20,
 			);
 			
-			if(AK_PAY_ONL_HCS____COMMISS > 0){
+			if(variable_get('payonline_hcs_commission', 0) > 0){
 				$form['submit']['#value'] .= '*';
-				$form['submit']['#suffix'] = '<br /><label for="payonline-hcs-submit-button">*'.t('Comission').'&nbsp;'.AK_PAY_ONL_HCS____COMMISS.'% - <strong>'.$paySummProc.'</strong>.</label>';
+				$form['submit']['#suffix'] = '<br /><label for="payonline-hcs-submit-button">*'.t('Comission').'&nbsp;'.variable_get('payonline_hcs_commission', 0).'% - <strong>'.$paySummProc.'</strong>.</label>';
 			}
 		break;
 	}
@@ -540,23 +500,16 @@ function payonline_hcs_payment_form_validate($form, &$form_state) {
 	$flat	= payonline_hcs_isset_var($form_state['values']['pay_hcs_room_flats']);
 	$page = (int)$form_state['storage']['page'];
 	
-	if(AK_PAY_ONL_HCSCHECK_FLAT > 0 and $page == 1){
-		try{
-			$addr = db_select('payonline_hcs_pan_flats', 'ch')
-			->fields('ch', array('id'))
-			->condition('pf_lc_fkey', check_plain(trim($fls)))
-			->condition('pf_flat', check_plain(trim($flat)))
-			->range(0,1)
-			->execute()->fetchAssoc();
-		}
-		catch(Exception $e){
-			watchdog_exception('payonline-hcs-error', $e);
-			drupal_set_message('Error. More information in '.l('syslog','admin/reports/dblog').'.<br />'.check_plain($e->getMessage()), 'error', FALSE);
-			return false;
-		}
+	if(variable_get('payonline_hcs_use_handbook_verify', 0) > 0 and $page == 1){
+		$addr = db_select('payonline_hcs_pan_flats', 'ch')
+		->fields('ch', array('id'))
+		->condition('pf_lc_fkey', check_plain(trim($fls)))
+		->condition('pf_flat', check_plain(trim($flat)))
+		->range(0,1)
+		->execute()->fetchAssoc();	
 	}
 	
-	if(empty($addr) and AK_PAY_ONL_HCSCHECK_FLAT > 0 and $page == 1){
+	if(empty($addr) and variable_get('payonline_hcs_use_handbook_verify', 0) > 0 and $page == 1){
 		form_set_error('pay_hcs_lc_fkey', t('Personal account number does not match with the number of flats.'));
 	}
 }
@@ -564,7 +517,7 @@ function payonline_hcs_payment_form_validate($form, &$form_state) {
  * Ajax function for choose type field
  * */
 function payonline_hcs_is_data_callback($form, $form_state){
-	return $form['pay_hcs_user_strah'];
+	return $form['pay_hcs_strah_fieldset']['pay_hcs_user_strah'];
 }
 
 function payonline_hcs_payment_form_submit($form, &$form_state){
@@ -591,7 +544,7 @@ function payonline_hcs_payment_form_submit($form, &$form_state){
 		unset($form_state['values']['pay_hcs_room_flats']);
 		unset($form_state['values']['submit']);
 		//~ debug($form_state['values']);
-		drupal_goto(url(AK_PAY_ONL_HCS___PAGE), array('query'=>$form_state['values']));
+		drupal_goto(url(variable_get('payonline_hcs_form_payment_page', 'https://secure.payonlinesystem.com/ru/payment/select/')), array('query'=>$form_state['values']));
 	}
 }
 /**
@@ -614,26 +567,6 @@ function payonline_hcs_isset_var(&$var, $newVal = false){
 	}
 	return $var;
 }
-
-function payonline_hcs_check_fls_access($fls){
-	global $user;
-	//~ Check whether the user has access to the specified account
-	$ch_fls		= explode(",", payonline_hcs_isset_var($user->data['alcom_konsalt_lc_fkey']));
-	
-	$chPoint	= false;
-	
-	if(sizeof($ch_fls) and in_array($fls, $ch_fls)){
-		$chPoint = true;
-	}
-	unset($key,$val);
-	
-	if(!$chPoint){
-		drupal_set_message(t("You do not have access to that personal account."), 'error', FALSE); return false;
-	}
-	
-	return true;
-}
-
 
 /**
  * Generate Order ID
