@@ -247,23 +247,8 @@ function payonline_hcs_block_view($delta = '') {
 	}
 	return $block;
 }
-
-/**
- * Implements hook_forms().
- * Need to accommodate multiple forms of payment on a single page.
- */
-function payonline_hcs_forms($form_id, $args) {
-  $forms = array();
-  if(strpos($form_id, 'payonline_hcs_payment_form') !== false){
-    $forms[$form_id]['callback'] = 'payonline_hcs_payment_form';
-    $forms[$form_id]['callback arguments'] = $args;
-  }
-  return $forms;
-}
-
 /**
  * Payment form.
- * $barcode - associative array with barcode and barcode num
  * */
 function payonline_hcs_payment_form($form, &$form_state){
 	global $user,$month,$mesArr;
@@ -614,26 +599,6 @@ function payonline_hcs_isset_var(&$var, $newVal = false){
 	}
 	return $var;
 }
-
-function payonline_hcs_check_fls_access($fls){
-	global $user;
-	//~ Check whether the user has access to the specified account
-	$ch_fls		= explode(",", payonline_hcs_isset_var($user->data['alcom_konsalt_lc_fkey']));
-	
-	$chPoint	= false;
-	
-	if(sizeof($ch_fls) and in_array($fls, $ch_fls)){
-		$chPoint = true;
-	}
-	unset($key,$val);
-	
-	if(!$chPoint){
-		drupal_set_message(t("You do not have access to that personal account."), 'error', FALSE); return false;
-	}
-	
-	return true;
-}
-
 
 /**
  * Generate Order ID
