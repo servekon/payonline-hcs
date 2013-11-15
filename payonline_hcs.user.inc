@@ -1,5 +1,4 @@
 <?php
-// $Id: payonline_hcs.user.inc,v 1.0 2013/11/02 00:35:12 servekon Exp $
 /**
  * Callback to payonline
  * */
@@ -29,7 +28,7 @@ function payonline_hcs_confirm_payment(){
 		$summWithoutProc = round(($summ*100)/$proc,2);
 	}
 	
-	if((bool)AK_PAY_ONL_HCS__PRIV_SEC_KEY === false){
+	if((bool)variable_get('payonline_hcs_private_key', '') === false){
 		watchdog('payonline-hcs-error', 'Payment false. Secret key is empty');
 		drupal_access_denied();
 		drupal_exit();
@@ -41,7 +40,7 @@ function payonline_hcs_confirm_payment(){
 		'OrderId' => $lcoc,
 		'Amount' => $summ,
 		'Currency' => $currency,
-		'PrivateSecurityKey' => AK_PAY_ONL_HCS__PRIV_SEC_KEY,
+		'PrivateSecurityKey' => variable_get('payonline_hcs_private_key', ''),
 	);
 	
 	foreach($arrHash as $key=>$val){
@@ -85,7 +84,7 @@ function payonline_hcs_confirm_payment(){
 				'liability_insurance' => $liabIns,
 				'full_insurance' => $fullIns,
 				'peni' => $peni,
-				'merchant_id' => AK_PAY_ONL_HCS_MID,
+				'merchant_id' => variable_get('payonline_hcs_mid', ''),
 				'payment_adopted_status' => 1,
 				'date_adoption_payment' => date('Y-m-d H:i:s'),
 				'date_adoption_payment_in_payonline' => format_date(strtotime($dateTime)+date('Z'), 'custom', 'Y-m-d H:i:s', 'Europe/Moscow'),
