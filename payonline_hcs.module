@@ -301,14 +301,14 @@ function payonline_hcs_payment_form($form, &$form_state){
 				),
 			);
 			
-			$form['pay_hcs_user_strah']=array(
+			$form['pay_hcs_strah_fieldset']['pay_hcs_user_strah']=array(
 				'#prefix' => '<div id="user-data-wrapper">',
 				'#suffix' => '</div>',
 				'#weight' => 7,
 			);
 			
 			if(isset($form_state['input']['pay_hcs_strah']) and $form_state['input']['pay_hcs_strah'] == 4){
-				$form['pay_hcs_user_strah'] = array(
+				$form['pay_hcs_strah_fieldset']['pay_hcs_user_strah'] = array(
 					'#type' => 'textfield',
 					'#title' => t('Insurance sum'),
 					'#required' => TRUE,
@@ -517,7 +517,7 @@ function payonline_hcs_payment_form_validate($form, &$form_state) {
  * Ajax function for choose type field
  * */
 function payonline_hcs_is_data_callback($form, $form_state){
-	return $form['pay_hcs_user_strah'];
+	return $form['pay_hcs_strah_fieldset']['pay_hcs_user_strah'];
 }
 
 function payonline_hcs_payment_form_submit($form, &$form_state){
