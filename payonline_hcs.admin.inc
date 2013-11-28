@@ -213,7 +213,7 @@ function payonline_hcs_viewpayment($form = array(), &$form_state){
 	}
 	$noBalans = 0;
 	foreach($result as $key=>$val){
-		$val->date_adoption_payment_in_payonline	= format_date(strtotime($val->date_adoption_payment_in_payonline), 'custom', 'd.m.Y H:i:s', 'Europe/Moscow');
+		$val->date_adoption_payment_in_payonline	= format_date(strtotime($val->date_adoption_payment_in_payonline)+date('Z'), 'custom', 'd.m.Y H:i:s', 'Europe/Moscow');
 		$val->lc_fkey								= l($val->lc_fkey, 'javascript:', array('attributes'=>array('onclick'=>'javascript:jQuery("#edit-pay-hcs-filter-text").val("'.$val->lc_fkey.'"); jQuery("#edit-pay-hcs-filter-payonline").removeClass("collapsed"); jQuery("#edit-pay-hcs-filter-type").val("1"); jQuery(".fieldset-wrapper").show(); return false;')));
 		$val->lcoc_key								= l($val->lcoc_key, 'javascript:', array('attributes'=>array('onclick'=>'javascript:jQuery("#edit-pay-hcs-filter-text").val("'.$val->lcoc_key.'"); jQuery("#edit-pay-hcs-filter-payonline").removeClass("collapsed"); jQuery("#edit-pay-hcs-filter-type").val("2"); jQuery(".fieldset-wrapper").show(); return false;')));
 		$val->provider 								= $arrProv[$user->language][(string)$val->provider];

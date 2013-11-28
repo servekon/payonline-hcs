@@ -57,7 +57,7 @@ function payonline_hcs_confirm_payment(){
 			$qCheck	= db_select('payonline_hcs_payments', 'pp')
 			->fields('pp', array('id'))
 			->condition('lcoc_key', $lcoc)
-			->condition('date_adoption_payment_in_payonline', format_date(strtotime($dateTime)+date('Z'), 'custom', 'Y-m-d H:i:s', 'Europe/Moscow'))
+			->condition('date_adoption_payment_in_payonline', $dateTime)
 			->execute()->fetchField();
 			
 			$qCheck = (bool)$qCheck;
@@ -87,7 +87,8 @@ function payonline_hcs_confirm_payment(){
 				'merchant_id' => variable_get('payonline_hcs_mid', ''),
 				'payment_adopted_status' => 1,
 				'date_adoption_payment' => date('Y-m-d H:i:s'),
-				'date_adoption_payment_in_payonline' => format_date(strtotime($dateTime)+date('Z'), 'custom', 'Y-m-d H:i:s', 'Europe/Moscow'),
+				//~ 'date_adoption_payment_in_payonline' => format_date(strtotime($dateTime)+date('Z'), 'custom', 'Y-m-d H:i:s', 'Europe/Moscow'),
+				'date_adoption_payment_in_payonline' => $dateTime,
 			  ))
 			->execute();
 			watchdog('payonline-hcs-info', 'Payment successful. Account number for payment: '.$lcoc.'; Provider: '.$payProv.'; Summ: '. $summ.'.');
@@ -100,7 +101,7 @@ function payonline_hcs_confirm_payment(){
 		}
 	}
 	else{
-		watchdog('payonline-hcs-info', 'Payment false. Empty Data. Account number for payment: '.$lcoc.'; Number account number: '.$lcFkey.'; Summ: '. $summ.'.');
+		watchdog('payonline-hcs-error', 'Payment false. Empty Data. Account number for payment: '.$lcoc.'; Number account number: '.$lcFkey.'; Summ: '. $summ.'.');
 		drupal_access_denied();
 		drupal_exit();
 	}
