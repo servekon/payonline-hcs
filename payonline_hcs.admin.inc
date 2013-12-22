@@ -81,11 +81,16 @@ function payonline_hcs_admin() {
 function payonline_hcs_viewpayment($form = array(), &$form_state){
 	global $user;
 	
+    if($user->uid == 0){
+        drupal_access_denied();
+        drupal_exit();
+    }
+    
 	$proc = 0;
 	$summWithoutProc = 0;
 	$isAdmin	= user_access('administer_payonline_hcs');
 	
-	if($isAdmin){
+    if($isAdmin){
 		$arg = (string)payonline_hcs_isset_var($form_state['input']['pay_hcs_filter_text']);
 		$collapsed = true;
 		$argType = (int)payonline_hcs_isset_var($form_state['input']['pay_hcs_filter_type']);
@@ -192,6 +197,11 @@ function payonline_hcs_viewpayment($form = array(), &$form_state){
 		$query->fields('pays', array('lc_fkey', 'lcoc_key', 'date_adoption_payment_in_payonline', 'provider', 'currency', 'summ', 'home_insurance', 'liability_insurance', 'full_insurance', 'peni', 'commis'))
 		->condition('pays.payment_adopted_status', 1, '=');
 		
+        //Allow for administrator view all payments
+		if(!$isAdmin){
+			$query->condition('pays.uid', $user->uid);
+		}
+        
 		if($isAdmin and !empty($arg)){
 			switch($argType){
 				case 1: default:
