@@ -383,9 +383,9 @@ function payonline_hcs_payment_form($form, &$form_state){
 				$paySummProc = round($sum*$proc,2);
 				$summWithProc = $sum+$paySummProc;
 			}
-			$ordDesc		= t('Payment of charges HCS for personal account number %pan, sum %sum.', array('%pan'=>$fls, '%sum'=>$sum));
+			$ordDesc		= t('Payment of charges HCS for personal account number %pan, sum %sum.', array('%pan'=>$fls, '%sum'=>number_format($sum, 2, ',', ' ')));
 			
-			if($sum100 > 0){
+            if($sum100 > 0){
 				$form['pay_hcs_sum_detail']=array(
 					'#markup' => t('Sum').': <strong>'.$sum100.'</strong>'.$rubl.'. ',
 					'#weight' => 4,
