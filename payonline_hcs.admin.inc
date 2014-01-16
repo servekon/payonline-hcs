@@ -766,3 +766,38 @@ function payonline_hcs_get_first_row($file, $encode){
 	$linePer = preg_match('/\\r/', $line);
 	return (int)$linePer;
 }
+
+/**
+ * Statistic page. Show active users.
+ * */
+function payonline_hcs_statistic_page(){
+	$out = '';
+	$rows = array();
+	
+    $countPayonline = db_select('payonline_hcs_payments');
+    $countPayonline->addExpression('Count(*)', 'count');
+    $countPayonline->addExpression('Sum(summ)', 'sum');
+    $countPayonline = $countPayonline->execute()
+    ->fetchAllAssoc('count');
+    foreach(array_values($countPayonline) as $val){
+        $rowsArr[t('Count payments')] = $val->count;
+        $rowsArr[t('Sum payments')] = number_format($val->sum, 2, '.', ' ');
+    }
+    unset($val);
+
+	foreach($rowsArr as $key=>$val){
+		$rows[] = array(
+			'data' => array(array('data'=>$key.':', 'style' => array('width:50%; text-align:right')), array('data'=>$val, 'class'=>array('bold'))),	
+		);
+	}
+	
+	$out = theme('table',
+		array(
+			'header' => array(),
+			'rows'=>$rows,
+			'empty' => t('No data.'),
+		)
+	);
+	
+	return $out;
+}

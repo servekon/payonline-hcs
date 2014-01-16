@@ -96,6 +96,22 @@ function payonline_hcs_menu() {
 		'weight' => 3,
 	);
 	
+    $menu['admin/payonline_hcs/statistic'] = array(
+		'title' => 'Statistics',
+		'page callback' => 'payonline_hcs_statistic_page',
+		//~ 'page arguments' => array('alcom_konsalt_admin_oplata'),
+		'access arguments' => array('administer_payonline_hcs'),
+		'file' => 'payonline_hcs.admin.inc',
+		'type' => MENU_LOCAL_TASK,
+		'weight' => 4,
+	);
+	
+	$menu['admin/payonline_hcs/statistic/stat'] = array(
+		'title' => 'Statistics', 
+		'type' => MENU_DEFAULT_LOCAL_TASK, 
+		'weight' => -10,
+	);
+    
 	$menu['admin/payonline_hcs/configure'] = array(
 		'title' => 'Configure Payonline',
 		'description' => 'Configure the Payonline HCS module',
