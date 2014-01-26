@@ -1,4 +1,5 @@
 Version 1.0.1
+-Add page with statistic;
 -Add index by order ID in 'payonline_hcs_payments' table;
 -Now in the payment status is recorded ID packs;
 -Rename field 'id' to 'pp_id' in payonline_hcs_payments_packs table;
