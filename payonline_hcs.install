@@ -33,6 +33,7 @@ function payonline_hcs_schema() {
                 'type' => 'int',
                 'size' => 'big',
                 'not null' => TRUE, 
+                'default' => 0,
                 'description'=> "User ID",
             ),
             'lcoc_key' => array(
@@ -155,7 +156,7 @@ function payonline_hcs_schema() {
                 'type' => 'int',
                 'size' => 'small',
                 'default' => 0, 'not null' => TRUE, 
-				'description'=> "Payment status. 0 - not discharged. 1 - discharged. Need for packs.",
+				'description'=> "Payment status. 0 - not discharged. If >0 - Pack ID. Need for packs.",
             ),
 			'dateizm' => array(
                 'type' => 'datetime',
@@ -167,6 +168,7 @@ function payonline_hcs_schema() {
         'indexes' => array(
             'uid'=>array('uid'),
             'lc_fkey'=>array('lc_fkey'),
+            'lcoc_key'=>array('lcoc_key'),
         ),
 		'primary key' => array('id')
     );
@@ -284,7 +286,7 @@ function payonline_hcs_schema() {
 	//Payments packs
 	$schema['payonline_hcs_payments_packs'] = array(
         'fields' => array(
-            'id' => array(
+            'pp_id' => array(
                 'type' => 'serial',
                 'size' => 'big',
                 'not null' => TRUE, 
@@ -368,4 +370,17 @@ function payonline_hcs_schema() {
     );
 	
 	return $schema;
+}
+
+/**
+ * Add index by order ID in 'payonline_hcs_payments' table.
+ * Rename field 'id' to 'pp_id' in payonline_hcs_payments_packs table.
+ */
+function payonline_hcs_update_7101(){
+	//Version 1.0.1
+	if(!db_index_exists('payonline_hcs_payments', 'lcoc_key')){
+        db_add_index('payonline_hcs_payments', 'lcoc_key', array('lcoc_key'));
+    }
+    db_query("ALTER TABLE {payonline_hcs_payments_packs} CHANGE `id` `pp_id` BIGINT(20) NOT NULL AUTO_INCREMENT COMMENT 'Payment pack ID'");
+    db_query("UPDATE {payonline_hcs_payments} as upd INNER JOIN {payonline_hcs_payments_reestr} as pay ON upd.lcoc_key=pay.pr_lcoc_key SET upd.status_payment = pay.pack_id");
 }

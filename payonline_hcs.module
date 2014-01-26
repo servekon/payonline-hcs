@@ -166,6 +166,14 @@ function payonline_hcs_menu() {
 		'type' => MENU_CALLBACK
 	);
 
+	$menu['payonline-hcs/check-status'] = array(
+		'title' => 'Check payment status Payonline',
+		'description' => 'Form to check of payment status',
+        'page callback' => 'drupal_get_form',
+		'page arguments' => array('payonline_hcs_check_status_payment_form'),
+		'access arguments' => array('payable_payonline_hcs'),
+	);
+
 	return $menu;
 }
 
@@ -178,6 +186,12 @@ function payonline_hcs_block_info(){
 		'status' => FALSE,
 		'visibility' => BLOCK_VISIBILITY_NOTLISTED,
 		'pages' => 'payonline-hcs/make-payment',
+	);
+	$blocks['pay_hcs_check_status_form_block'] = array(
+		'info' => t('Check payment status Payonline'),
+		'status' => FALSE,
+		'visibility' => BLOCK_VISIBILITY_NOTLISTED,
+		'pages' => 'payonline-hcs/check-status',
 	);
 	return $blocks;
 }
@@ -235,6 +249,10 @@ function payonline_hcs_block_view($delta = '') {
 	if($delta == 'pay_hcs_payform_block'){
 		$block['subject'] = t('HCS payment form');
 		$block['content'] = drupal_get_form('payonline_hcs_payment_form');
+	}
+	if($delta == 'pay_hcs_check_status_form_block'){
+		$block['subject'] = t('Check payment status Payonline');
+		$block['content'] = drupal_get_form('payonline_hcs_check_status_payment_form');
 	}
 	return $block;
 }
@@ -563,6 +581,89 @@ function payonline_hcs_payment_form_submit($form, &$form_state){
 		drupal_goto(url(variable_get('payonline_hcs_form_payment_page', 'https://secure.payonlinesystem.com/ru/payment/select/')), array('query'=>$form_state['values']));
 	}
 }
+
+/**
+ * Form to check of payment status
+ * */
+function payonline_hcs_check_status_payment_form($form=array(), &$form_state){
+    $form['pay_hcs_lc_fkey'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Personal account number'),
+        '#required' => TRUE,
+        '#weight' => 1,
+        '#default_value' => !empty($form_state['values']['pay_hcs_lc_fkey']) ? $form_state['values']['pay_hcs_lc_fkey'] : '',
+    );
+    $form['pay_hcs_order_num'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Order number'),
+        '#required' => TRUE,
+        '#weight' => 2,
+        '#default_value' => !empty($form_state['values']['pay_hcs_order_num']) ? $form_state['values']['pay_hcs_order_num'] : '',
+    );
+    
+    $form['submit'] = array(
+        '#type' => 'submit',
+        '#value' => t('Check'),
+        '#weight' => 10,
+    );
+    $form['pay_hcs_cancel'] = array(
+        '#type' => 'link',
+        '#title' => t('Cancel'),
+        '#href' => '',
+        '#weight' => 11,
+    );
+    $form['#action'] = url('payonline-hcs/check-status');
+    return $form;
+}
+
+function payonline_hcs_check_status_payment_form_submit($form, &$form_state){
+    global $user;
+    $lcfkey = check_plain($form_state['values']['pay_hcs_lc_fkey']);
+    $ordernum = check_plain($form_state['values']['pay_hcs_order_num']);
+    
+    $cntCookie = (int)isset($_COOKIE['Drupal_visitor_payonline_hcs_count_check_status']) ? $_COOKIE['Drupal_visitor_payonline_hcs_count_check_status'] : 0;
+    $nextTime = (int)isset($_COOKIE['Drupal_visitor_payonline_hcs_next_time_check_status']) ? $_COOKIE['Drupal_visitor_payonline_hcs_next_time_check_status'] : time();
+    $cntCookie++;
+    $arrCookie = array(
+        'payonline_hcs_next_time_check_status'=>$nextTime+15,
+        'payonline_hcs_count_check_status'=>$cntCookie,
+    );
+    user_cookie_save($arrCookie);
+    if($cntCookie <= 3 and time() >= $nextTime){
+        $q = db_select('payonline_hcs_payments', 'p')
+        ->fields('p', array('payment_adopted_status'))
+        ->condition('lcoc_key', $ordernum)
+        ->condition('lc_fkey', $lcfkey)
+        ->execute()->fetchObject();
+        
+        if($q){
+            if((int)$q->payment_adopted_status == 0){
+                drupal_set_message(t('Payment has not been confirmed.'), 'warning');
+            }
+            else{
+                drupal_set_message(t('Payment was successful.'));
+            }
+            //~ $form_state['redirect'] = '';
+        }
+        else{
+            drupal_set_message(t('Payment not found in database.'), 'error');
+            $form_state['rebuild'] = TRUE;
+        }
+        $arrCookie = array(
+            'payonline_hcs_next_time_check_status'=>time()+1800,
+            'payonline_hcs_count_check_status'=>0,
+        );
+        user_cookie_save($arrCookie);
+    }
+    
+    if($cntCookie > 3 and time() < $nextTime){
+        drupal_set_message(t('Too many requests per unit of time.'), 'warning');
+    }
+    elseif(($cntCookie > 3 and time() >= $nextTime)){
+        drupal_set_message(t('Error cookies.'), 'error');
+    }
+}
+
 /**
  * Implementation of hook_help().
  */

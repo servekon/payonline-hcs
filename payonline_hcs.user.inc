@@ -29,7 +29,7 @@ function payonline_hcs_confirm_payment(){
 	}
 	
 	if((bool)variable_get('payonline_hcs_private_key', '') === false){
-		watchdog('payonline-hcs-error', 'Payment false. Secret key is empty');
+		watchdog('payonline-hcs-error', 'Payment false. Secret key is empty.');
 		drupal_access_denied();
 		drupal_exit();
 	}

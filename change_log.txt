@@ -1,0 +1,6 @@
+Version 1.0.1
+-Add index by order ID in 'payonline_hcs_payments' table;
+-Now in the payment status is recorded ID packs;
+-Rename field 'id' to 'pp_id' in payonline_hcs_payments_packs table;
+-Added field of pack number in the list payments admin page;
+-Add check status payment page and block;
