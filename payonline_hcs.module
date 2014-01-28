@@ -1,5 +1,8 @@
 <?php
 define('AP_PAYONLINE_PATH_MODULE', (string)base_path().drupal_get_path('module', 'payonline_hcs'));
+global $rublPay,$summWithProc,$paySummProc;
+$rublPay = '<img alt="rublPay" style="height: 10px;" src="'.AP_PAYONLINE_PATH_MODULE.'/images/rubl.gif" />';
+$summWithProc=$paySummProc=0;
 /**
 * Valid permissions for this module
 * @return array An array of valid permissions for the onthisdate module
@@ -256,285 +259,72 @@ function payonline_hcs_block_view($delta = '') {
 	}
 	return $block;
 }
+
+/**
+ * List steps for the payment form
+ * */
+function _payonline_hcs_steps_payment_form_steps(){
+    return array(
+        1 => array(
+            'form' => 'payonline_hcs_step_one_payment_form',
+        ),
+        2 => array(
+            'form' => 'payonline_hcs_step_two_payment_form',
+        ),
+    );
+}
+
 /**
  * Payment form.
  * */
 function payonline_hcs_payment_form($form, &$form_state){
-	global $user,$month,$mesArr;
-	$rubl = '<img alt="rubl" style="height: 10px;" src="'.AP_PAYONLINE_PATH_MODULE.'/images/rubl.gif" />';
+	global $user,$month,$mesArr,$summWithProc,$paySummProc,$rublPay;
 	
-	if(empty($form_state['storage']['page'])){$form_state['storage']['page']=1;}
-	$page = (int)$form_state['storage']['page'];
+	if(empty($form_state['step'])){
+        $form_state['step']=1;
+        $form_state['step_forms'] = _payonline_hcs_steps_payment_form_steps();
+    }
+	$step = &$form_state['step'];
 	
-	$form = array();
+	$form = $form_state['step_forms'][$step]['form']($form, $form_state);
 	
-	switch($page){
-		case 1:
-			$form['pay_hcs_lc_fkey'] = array(
-				'#type' => 'textfield',
-				'#title' => t('Personal account number'),
-				'#required' => TRUE,
-				'#weight' => 1,
-				'#default_value' => !empty($form_state['values']['pay_hcs_lc_fkey']) ? $form_state['values']['pay_hcs_lc_fkey'] : '',
-			);
-			
-			if(variable_get('payonline_hcs_use_handbook_verify', 0) > 0){
-				$form['pay_hcs_room_flats'] = array(
-					'#type' => 'textfield',
-					'#title' => t('Room flats'),
-					'#required' => TRUE,
-					'#weight' => 2,
-					'#default_value' => !empty($form_state['values']['pay_hcs_room_flats']) ? $form_state['values']['pay_hcs_room_flats'] : '',
-				);
-			}
-			
-			$form['pay_hcs_sum'] = array(
-				'#type' => 'textfield',
-				'#title' => t('Sum'),
-				'#required' => TRUE,
-				'#weight' => 3,
-				'#default_value' => !empty($form_state['values']['pay_hcs_sum']) ? $form_state['values']['pay_hcs_sum'] : '',
-			);
-			
-			$insArr = array(t('No'));
-			
-			
-			if(variable_get('payonline_hcs_home_insurance', 0) > 0){
-				$insArr[1] = t('Home insurance').' (+<strong>'.variable_get('payonline_hcs_home_insurance', 0).'</strong>'.$rubl.')';
-			}
-			
-			if(variable_get('payonline_hcs_liability_insurance', 0) > 0){
-				$insArr[2] = t('Third party liability insurance').' (+<strong>'.variable_get('payonline_hcs_liability_insurance', 0).'</strong>'.$rubl.')';
-			}
-			
-			if(variable_get('payonline_hcs_full_insurance', 0) > 0){
-				$insArr[3] = t('Full insurance').' (+<strong>'.variable_get('payonline_hcs_full_insurance', 0).'</strong>'.$rubl.')';
-			}
-			$insArr[4] = t('Manually');
-			
-			$form['pay_hcs_strah_fieldset'] = array(
-			  '#type' => 'fieldset',
-			  '#title' => t('Insurance'),
-			  '#weight' => 4,
-			  '#collapsible' => TRUE,
-			  '#collapsed' =>TRUE,
-			);
-			
-			$form['pay_hcs_strah_fieldset']['pay_hcs_strah'] = array(
-				'#type' => 'radios',
-				'#title' => t('Insurance'),
-				'#weight' => 4,
-				'#options' => $insArr,
-				'#default_value' => !empty($form_state['values']['pay_hcs_strah']) ? $form_state['values']['pay_hcs_strah'] : 0,
-				'#description' => t('If choose "Manually", then Insurance type will be "Full".'),
-				'#ajax' => array(
-					'callback' => 'payonline_hcs_is_data_callback',
-					'wrapper' => 'user-data-wrapper',
-					'event' => 'change',
-					'method' => 'replace',
-				),
-			);
-			
-			$form['pay_hcs_strah_fieldset']['pay_hcs_user_strah']=array(
-				'#prefix' => '<div id="user-data-wrapper">',
-				'#suffix' => '</div>',
-				'#weight' => 7,
-			);
-			
-			if(isset($form_state['input']['pay_hcs_strah']) and $form_state['input']['pay_hcs_strah'] == 4){
-				$form['pay_hcs_strah_fieldset']['pay_hcs_user_strah'] = array(
-					'#type' => 'textfield',
-					'#title' => t('Insurance sum'),
-					'#required' => TRUE,
-					'#prefix' => '<div id="user-data-wrapper">',
-					'#suffix' => '</div>',
-					'#default_value' => !empty($form_state['values']['pay_hcs_user_strah']) ? $form_state['values']['pay_hcs_user_strah'] : '',
-					'#weight' => 7,
-				);
-			}
-			
-			$form['pay_hcs_peni'] = array(
-				'#type' => 'textfield',
-				'#title' => t('Peni'),
-				'#default_value' => !empty($form_state['values']['pay_hcs_peni']) ? $form_state['values']['pay_hcs_peni'] : '',
-				'#weight' => 8,
-			);
-			
-			$form['redirect'] = FALSE;
-			$form['submit'] = array(
-				'#type' => 'submit',
-				'#value' => t('Next'),
-				'#weight' => 10,
-			);
-		break;
-		//~ Step 2
-		case 2:
-			$addr 	= array();
-			$fls 	= $form_state['storage']['values']['pay_hcs_lc_fkey'];
-			$flat	= $form_state['storage']['values']['pay_hcs_room_flats'];
-			
-			$secKeyArr	= array();
-			$strahArr	= array(
-				'0' => 0,
-				'1' => variable_get('payonline_hcs_home_insurance', 0),
-				'2' => variable_get('payonline_hcs_liability_insurance', 0),
-				'3' => variable_get('payonline_hcs_full_insurance', 0),
-				'4' => (float)payonline_hcs_isset_var($form_state['storage']['values']['pay_hcs_user_strah']),
-			);
-			
-			$order_id 	= $form_state['storage']['values']['pay_hcs_order_id'];
-			$sum 		= (float)$form_state['storage']['values']['pay_hcs_sum'];
-			$sum100 	= $sum;
-			$peni 		= (float)$form_state['storage']['values']['pay_hcs_peni'];
-			$strahSum 	= (float)$strahArr[$form_state['storage']['values']['pay_hcs_strah']];
-			$sum 		+= $strahSum;
-			$sum 		+= $peni;
-			
-			if($sum100 <= 0){
-				return $form;
-			}
-			
-			if($sum > 30000){
-				$sum = round((30000*100)/(100+variable_get('payonline_hcs_commission', 0)),2);
-				drupal_set_message(t('Amount does not exceed 30 000.'), 'warning', FALSE);
-			}
-			
-			$paySummProc 	= 0;
-			$summWithProc 	= $sum;
-				
-			if(variable_get('payonline_hcs_offer_node_id', 0) == 0 or ((bool)variable_get('payonline_hcs_private_key', '') === false)){
-				$form['pay_hcs_error']=array(
-					'#type' => 'item',
-					'#title' => t('Making payments is impossible.'),
-					'#markup' => t('Contact the site administrator.'),
-					'#weight' => 2,
-				);
-				return $form;
-			}
-			
-			if(variable_get('payonline_hcs_commission', 0) > 0){
-				$proc = (float)variable_get('payonline_hcs_commission', 0)/100;
-				$paySummProc = round($sum*$proc,2);
-				$summWithProc = $sum+$paySummProc;
-			}
-			$ordDesc		= t('Payment of charges HCS for personal account number %pan, sum %sum.', array('%pan'=>$fls, '%sum'=>number_format($sum, 2, ',', ' ')));
-			
-            if($sum100 > 0){
-				$form['pay_hcs_sum_detail']=array(
-					'#markup' => t('Sum').': <strong>'.$sum100.'</strong>'.$rubl.'. ',
-					'#weight' => 4,
-				);
-			}
-			
-			if($strahSum > 0){
-				$form['pay_hcs_sum_detail']['#markup'] .= t('Insurance').': <strong>'.$strahSum.'</strong>'.$rubl.'. ';
-			}
-			
-			if($peni > 0){
-				$form['pay_hcs_sum_detail']['#markup'] .= t('Peni').': <strong>'.$peni.'</strong>'.$rubl.'.';
-			}
-			
-			$arrForm = array(
-				/*
-				 * The required parameters
-				 * */
-				'MerchantId' => variable_get('payonline_hcs_mid', ''),
-				'OrderId' => $order_id,
-				'Amount' => number_format((float)$summWithProc, 2, '.', ''),
-				'Currency' => 'RUB',
-				/*
-				 * Optional parameters
-				 * */
-				'OrderDescription' => strip_tags($ordDesc),// Max length - 100 symbols 
-				//~ 'ReturnUrl' => htmlspecialchars('http://alcom-konsalt.ru/payonline-hcs/view-payment'),
-			);
-			
-			foreach($arrForm as $key=>$val2){
-				$form[$key] = array(
-					'#type' => 'hidden',
-					'#value' => $val2,
-				);
-				$secKeyArr[] = $key.'='.$val2;
-			}
-			unset($key,$val2);
-			
-			$secKeyArr[] = 'PrivateSecurityKey='.variable_get('payonline_hcs_private_key', '');
-			
-			$secKey = md5(implode('&', $secKeyArr));
-			
-			$arrForm = array(
-				'pay_hcs_uid' => $user->uid,
-				'pay_hcs_commis' => variable_get('payonline_hcs_commission', 0),
-				'pay_hcs_peni' => $peni,
-				'pay_hcs_home_insurance' => 0,
-				'pay_hcs_liability_insurance' => 0,
-				'pay_hcs_full_insurance' => 0,
-			);
-			
-			//~ To break the types of insurance
-			switch($form_state['storage']['values']['pay_hcs_strah']){
-				case 1:
-					$arrForm['pay_hcs_home_insurance'] = $strahSum;
-				break;
-				case 2:
-					$arrForm['pay_hcs_liability_insurance'] = $strahSum;
-				break;
-				case 3: case 4:
-					$arrForm['pay_hcs_full_insurance'] = $strahSum;
-				break;
-			}
-			
-			foreach($arrForm as $key=>$val){
-				$form[$key] = array(
-					'#type' => 'hidden',
-					'#value' => $val,
-				);
-			}unset($key,$val);
-			
-			$form['SecurityKey'] = array(
-				'#type' => 'hidden',
-				'#value' => $secKey,
-			);
-			
-			$form['pay_hcs_fls_number']=array(
-				'#type' => 'item',
-				'#title' => t('Personal account number').':',
-				'#markup' => $fls,
-				'#weight' => 0,
-			);
-			
-			$form['pay_hcs_afert']=array(
-				'#type' => 'checkbox',
-				'#title' => l(t('I have read and agree with the terms of the public offer'), 'node/'.variable_get('payonline_hcs_offer_node_id', 0)),
-				'#required' => TRUE,
-				'#weight' => 10,
-				//~ '#default_value' => 1,
-			);
-			 
-			$form['submit'] = array(
-					'#type' => 'submit',
-					'#value' => t('Pay it').'
-'.$summWithProc,
-					'#attributes'=> array('class'=>array('pay-button')),
-					'#weight' => 20,
-			);
-			
-			if(variable_get('payonline_hcs_commission', 0) > 0){
-				$form['submit']['#value'] .= '*';
-				$form['submit']['#suffix'] = '<br /><label for="payonline-hcs-submit-button">*'.t('Comission').'&nbsp;'.variable_get('payonline_hcs_commission', 0).'% - <strong>'.$paySummProc.'</strong>.</label>';
-			}
-		break;
-	}
-	$form['#action'] = url('payonline-hcs/make-payment');
-	return $form;
+    if ($step > 1){
+        $form['prev'] = array(
+            '#type' => 'submit',
+            '#value' => t('Previous'),
+            '#name' => 'prev',
+            '#submit' => array('payonline_hcs_payment_form_previous_submit'),
+            '#limit_validation_errors' => array(),
+            '#weight' => 20,
+        );
+    }
+    
+    if ($step < sizeof($form_state['step_forms'])){
+        $form['next'] = array(
+            '#type' => 'submit',
+            '#value' => t('Next'),
+            '#name' => 'next',
+            '#submit' => array('payonline_hcs_payment_form_next_submit'),
+            '#weight' => 21,
+        );
+    }
+    else{
+        
+    }
+    
+    if (function_exists($form_state['step_forms'][$step]['form'] . '_validate')){
+        $form['next']['#validate'] = array($form_state['step_forms'][$step]['form'].'_validate');
+    }
+    $form['#action'] = url('payonline-hcs/make-payment');
+    return $form;
 }
-function payonline_hcs_payment_form_validate($form, &$form_state) {
+
+function payonline_hcs_step_one_payment_form_validate($form, &$form_state){
 	$addr 	= array();
 	$fls 	= payonline_hcs_isset_var($form_state['values']['pay_hcs_lc_fkey']);
 	$flat	= payonline_hcs_isset_var($form_state['values']['pay_hcs_room_flats']);
-	$page = (int)$form_state['storage']['page'];
 	
-	if(variable_get('payonline_hcs_use_handbook_verify', 0) > 0 and $page == 1){
+	if(variable_get('payonline_hcs_use_handbook_verify', 0) > 0){
 		$addr = db_select('payonline_hcs_pan_flats', 'ch')
 		->fields('ch', array('id'))
 		->condition('pf_lc_fkey', check_plain(trim($fls)))
@@ -543,43 +333,312 @@ function payonline_hcs_payment_form_validate($form, &$form_state) {
 		->execute()->fetchAssoc();	
 	}
 	
-	if(empty($addr) and variable_get('payonline_hcs_use_handbook_verify', 0) > 0 and $page == 1){
+	if(empty($addr) and variable_get('payonline_hcs_use_handbook_verify', 0) > 0){
 		form_set_error('pay_hcs_lc_fkey', t('Personal account number does not match with the number of flats.'));
 	}
 }
-/**
- * Ajax function for choose type field
+/*
+ * Go to back previos step
  * */
-function payonline_hcs_is_data_callback($form, $form_state){
-	return $form['pay_hcs_strah_fieldset']['pay_hcs_user_strah'];
+function payonline_hcs_payment_form_previous_submit($form, &$form_state){
+    $step = &$form_state['step'];
+    $form_state['step_forms'][$step]['stored_values'] = $form_state['values'];
+    if ($step > 1) {
+        $step--;
+        $form_state['values'] = $form_state['step_forms'][$step]['stored_values'];
+    }
+    $form_state['rebuild'] = TRUE;
 }
 
-function payonline_hcs_payment_form_submit($form, &$form_state){
-	global $user;
-	
-	$form_state['rebuild'] = TRUE;
-	$page = $form_state['storage']['page'];
-	$lcocs = array();
+/**
+ * Next step submit
+ * */
+function payonline_hcs_payment_form_next_submit($form, &$form_state){
+    $step = &$form_state['step'];
+    $form_state['values']['pay_hcs_order_id'] = isset($form_state['values']['pay_hcs_order_id']) ? $form_state['values']['pay_hcs_order_id'] : _payonline_hcs_generate_order_id();
+    $form_state['step_forms'][$step]['stored_values'] = $form_state['values'];
+    if ($step < sizeof($form_state['step_forms'])){
+        $step++;
+        if (!empty($form_state['step_forms'][$step]['stored_values'])){
+            $form_state['values'] = $form_state['step_forms'][$step]['stored_values'];
+        }
+        else {
+            $form_state['values'] = array();
+        }
+        //~ $form_state['values']['pay_hcs_order_id'] = isset($form_state['values']['pay_hcs_order_id']) ? $form_state['values']['pay_hcs_order_id'] : _payonline_hcs_generate_order_id();
+        $form_state['rebuild'] = TRUE;
+        return;
+    }
+}
 
-	if($page == 1){
-		$form_state['storage']['values'] = $form_state['values'];
-		$form_state['storage']['values']['pay_hcs_order_id'] = isset($form_state['storage']['values']['pay_hcs_order_id']) ? $form_state['storage']['values']['pay_hcs_order_id'] : payonline_hcs_generate_order_id();
-		$form_state['storage']['page']++;
-	}
-	if($page == 2){
-		//Remove unneeded data
-		$form_state['values'] 	= array_merge($form_state['values'],$form_state['storage']['values']);
-		form_state_values_clean($form_state);
-		unset($form_state['values']['pay_hcs_afert']);
-		unset($form_state['values']['pay_hcs_sum']);
-		unset($form_state['values']['pay_hcs_order_id']);
-		unset($form_state['values']['pay_hcs_strah']);
-		unset($form_state['values']['pay_hcs_user_strah']);
-		unset($form_state['values']['pay_hcs_room_flats']);
-		unset($form_state['values']['submit']);
-		//~ debug($form_state['values']);
-		drupal_goto(url(variable_get('payonline_hcs_form_payment_page', 'https://secure.payonlinesystem.com/ru/payment/select/')), array('query'=>$form_state['values']));
-	}
+/*
+ * Step 1 payment form.
+ * */
+function payonline_hcs_step_one_payment_form($form, &$form_state){
+    global $rublPay;
+    $form = array();
+    $form['pay_hcs_lc_fkey'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Personal account number'),
+        '#required' => TRUE,
+        '#weight' => 1,
+        '#default_value' => !empty($form_state['values']['pay_hcs_lc_fkey']) ? $form_state['values']['pay_hcs_lc_fkey'] : '',
+    );
+    
+    if(variable_get('payonline_hcs_use_handbook_verify', 0) > 0){
+        $form['pay_hcs_room_flats'] = array(
+            '#type' => 'textfield',
+            '#title' => t('Room flats'),
+            '#required' => TRUE,
+            '#weight' => 2,
+            '#default_value' => !empty($form_state['values']['pay_hcs_room_flats']) ? $form_state['values']['pay_hcs_room_flats'] : '',
+        );
+    }
+    
+    $form['pay_hcs_sum'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Sum'),
+        '#required' => TRUE,
+        '#weight' => 3,
+        '#default_value' => !empty($form_state['values']['pay_hcs_sum']) ? $form_state['values']['pay_hcs_sum'] : '',
+    );
+    
+    $insArr = array(t('No'));
+    
+    
+    if(variable_get('payonline_hcs_home_insurance', 0) > 0){
+        $insArr[1] = t('Home insurance').' (+<strong>'.variable_get('payonline_hcs_home_insurance', 0).'</strong>'.$rublPay.')';
+    }
+    
+    if(variable_get('payonline_hcs_liability_insurance', 0) > 0){
+        $insArr[2] = t('Third party liability insurance').' (+<strong>'.variable_get('payonline_hcs_liability_insurance', 0).'</strong>'.$rublPay.')';
+    }
+    
+    if(variable_get('payonline_hcs_full_insurance', 0) > 0){
+        $insArr[3] = t('Full insurance').' (+<strong>'.variable_get('payonline_hcs_full_insurance', 0).'</strong>'.$rublPay.')';
+    }
+    $insArr[4] = t('Manually');
+    
+    $form['pay_hcs_strah_fieldset'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Insurance'),
+      '#weight' => 4,
+      '#collapsible' => TRUE,
+      '#collapsed' =>!empty($form_state['values']['pay_hcs_strah']) ? FALSE : TRUE,
+    );
+    
+    $form['pay_hcs_strah_fieldset']['pay_hcs_strah'] = array(
+        '#type' => 'radios',
+        '#title' => t('Insurance'),
+        '#weight' => 4,
+        '#options' => $insArr,
+        '#default_value' => !empty($form_state['values']['pay_hcs_strah']) ? $form_state['values']['pay_hcs_strah'] : 0,
+        '#description' => t('If choose "Manually", then Insurance type will be "Full".'),
+    );
+    
+    $form['pay_hcs_strah_fieldset']['pay_hcs_user_strah'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Insurance sum'),
+        '#default_value' => !empty($form_state['values']['pay_hcs_user_strah']) ? $form_state['values']['pay_hcs_user_strah'] : '',
+        '#weight' => 7,
+        '#states' => array(
+            'visible' => array(
+                ':input[name="pay_hcs_strah"]' => array('value' => 4),
+            ),
+        ),
+    );
+    
+    $form['pay_hcs_peni'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Peni'),
+        '#default_value' => !empty($form_state['values']['pay_hcs_peni']) ? $form_state['values']['pay_hcs_peni'] : '',
+        '#weight' => 8,
+    );
+    return $form;
+}
+
+/**
+ * Step 2(finish step) payment form.
+ * */
+function payonline_hcs_step_two_payment_form($form, &$form_state){
+    global $user,$rublPay,$summWithProc,$paySummProc;
+    $form = array();
+    $addr 	= array();
+    $prevStep = $form_state['step']-1;
+    
+    $form_state['values'] 	= array_merge($form_state['values'],$form_state['step_forms'][$prevStep]['stored_values']);
+    
+    $fls 	= $form_state['values']['pay_hcs_lc_fkey'];
+    $flat	= $form_state['values']['pay_hcs_room_flats'];
+    
+    $secKeyArr	= array();
+    $strahArr	= array(
+        '0' => 0,
+        '1' => variable_get('payonline_hcs_home_insurance', 0),
+        '2' => variable_get('payonline_hcs_liability_insurance', 0),
+        '3' => variable_get('payonline_hcs_full_insurance', 0),
+        '4' => (float)payonline_hcs_isset_var($form_state['values']['pay_hcs_user_strah']),
+    );
+    
+    $order_id 	= $form_state['values']['pay_hcs_order_id'];
+    $sum 		= (float)$form_state['values']['pay_hcs_sum'];
+    $sum100 	= $sum;
+    $peni 		= (float)$form_state['values']['pay_hcs_peni'];
+    $strahSum 	= (float)$strahArr[$form_state['values']['pay_hcs_strah']];
+    $sum 		+= $strahSum;
+    $sum 		+= $peni;
+
+    if($sum100 <= 0){
+        return $form;
+    }
+    
+    if($sum > 30000){
+        $sum = round((30000*100)/(100+variable_get('payonline_hcs_commission', 0)),2);
+        drupal_set_message(t('Amount does not exceed 30 000.'), 'warning', FALSE);
+    }
+    
+    $paySummProc 	= 0;
+    $summWithProc 	= $sum;
+        
+    if(variable_get('payonline_hcs_offer_node_id', 0) == 0 or ((bool)variable_get('payonline_hcs_private_key', '') === false)){
+        $form['pay_hcs_error']=array(
+            '#type' => 'item',
+            '#title' => t('Making payments is impossible.'),
+            '#markup' => t('Contact the site administrator.'),
+            '#weight' => 2,
+        );
+        return $form;
+    }
+    
+    if(variable_get('payonline_hcs_commission', 0) > 0){
+        $proc = (float)variable_get('payonline_hcs_commission', 0)/100;
+        $paySummProc = round($sum*$proc,2);
+        $summWithProc = $sum+$paySummProc;
+    }
+    $ordDesc		= t('Payment of charges HCS for personal account number %pan, sum %sum.', array('%pan'=>$fls, '%sum'=>number_format($sum, 2, ',', ' ')));
+    
+    if($sum100 > 0){
+        $form['pay_hcs_sum_detail']=array(
+            '#markup' => t('Sum').': <strong>'.$sum100.'</strong>'.$rublPay.'. ',
+            '#weight' => 4,
+        );
+    }
+    
+    if($strahSum > 0){
+        $form['pay_hcs_sum_detail']['#markup'] .= t('Insurance').': <strong>'.$strahSum.'</strong>'.$rublPay.'. ';
+    }
+    
+    if($peni > 0){
+        $form['pay_hcs_sum_detail']['#markup'] .= t('Peni').': <strong>'.$peni.'</strong>'.$rublPay.'.';
+    }
+    
+    $arrForm = array(
+        /*
+         * The required parameters
+         * */
+        'MerchantId' => variable_get('payonline_hcs_mid', ''),
+        'OrderId' => $order_id,
+        'Amount' => number_format((float)$summWithProc, 2, '.', ''),
+        'Currency' => 'RUB',
+        /*
+         * Optional parameters
+         * */
+        'OrderDescription' => strip_tags($ordDesc),// Max length - 100 symbols 
+        //~ 'ReturnUrl' => htmlspecialchars('http://alcom-konsalt.ru/payonline-hcs/view-payment'),
+    );
+    
+    foreach($arrForm as $key=>$val2){
+        $form[$key] = array(
+            '#type' => 'hidden',
+            '#value' => $val2,
+        );
+        $secKeyArr[] = $key.'='.$val2;
+    }
+    unset($key,$val2);
+    
+    $secKeyArr[] = 'PrivateSecurityKey='.variable_get('payonline_hcs_private_key', '');
+    
+    $secKey = md5(implode('&', $secKeyArr));
+    
+    $arrForm = array(
+        'pay_hcs_uid' => $user->uid,
+        'pay_hcs_lc_fkey' => $fls,
+        'pay_hcs_commis' => variable_get('payonline_hcs_commission', 0),
+        'pay_hcs_peni' => $peni,
+        'pay_hcs_home_insurance' => 0,
+        'pay_hcs_liability_insurance' => 0,
+        'pay_hcs_full_insurance' => 0,
+    );
+    
+    //~ To break the types of insurance
+    switch($form_state['values']['pay_hcs_strah']){
+        case 1:
+            $arrForm['pay_hcs_home_insurance'] = $strahSum;
+        break;
+        case 2:
+            $arrForm['pay_hcs_liability_insurance'] = $strahSum;
+        break;
+        case 3: case 4:
+            $arrForm['pay_hcs_full_insurance'] = $strahSum;
+        break;
+    }
+    
+    foreach($arrForm as $key=>$val){
+        $form[$key] = array(
+            '#type' => 'hidden',
+            '#value' => $val,
+        );
+    }unset($key,$val);
+    
+    $form['SecurityKey'] = array(
+        '#type' => 'hidden',
+        '#value' => $secKey,
+    );
+    
+    $form['pay_hcs_fls_number']=array(
+        '#type' => 'item',
+        '#title' => t('Personal account number').':',
+        '#markup' => $fls,
+        '#weight' => 0,
+    );
+    
+    $form['pay_hcs_afert']=array(
+        '#type' => 'checkbox',
+        '#title' => l(t('I have read and agree with the terms of the public offer'), 'node/'.variable_get('payonline_hcs_offer_node_id', 0)),
+        '#required' => TRUE,
+        '#weight' => 10,
+        //~ '#default_value' => 1,
+    );
+    
+    $form['finish'] = array(
+            '#type' => 'submit',
+            '#value' => t('Pay it').'
+'.$summWithProc,
+            '#attributes'=> array('class'=>array('pay-button')),
+            '#weight' => 30,
+    );
+    if(variable_get('payonline_hcs_commission', 0) > 0){
+        $form['finish']['#value'] .= '*';
+        $form['finish']['#suffix'] = '<br /><label for="payonline-hcs-submit-button">*'.t('Comission').'&nbsp;'.variable_get('payonline_hcs_commission', 0).'% - <strong>'.$paySummProc.'</strong>.</label>';
+    }
+    
+    return $form;
+}
+
+
+function payonline_hcs_payment_form_submit($form, &$form_state){
+	$step = &$form_state['step'];
+    $form_state['step_forms'][$step]['stored_values'] = $form_state['values'];
+    form_state_values_clean($form_state);
+    unset($form_state['values']['pay_hcs_afert']);
+    unset($form_state['values']['pay_hcs_sum']);
+    unset($form_state['values']['pay_hcs_order_id']);
+    unset($form_state['values']['pay_hcs_strah']);
+    unset($form_state['values']['pay_hcs_user_strah']);
+    unset($form_state['values']['pay_hcs_room_flats']);
+    unset($form_state['values']['submit']);
+    //~ debug($form_state['values']);
+    drupal_goto(url(variable_get('payonline_hcs_form_payment_page', 'https://secure.payonlinesystem.com/ru/payment/select/')), array('query'=>$form_state['values']));
 }
 
 /**
@@ -688,7 +747,7 @@ function payonline_hcs_isset_var(&$var, $newVal = false){
 /**
  * Generate Order ID
  * */
-function payonline_hcs_generate_order_id($out=''){
+function _payonline_hcs_generate_order_id($out=''){
 	$ip = explode('.', $_SERVER['REMOTE_ADDR']);
 	$suff = ((int)$ip[0]+(int)end($ip))+(rand(155,775));
 	$uuid = preg_replace('/[a-z]|[A-Z]/', '', uniqid());

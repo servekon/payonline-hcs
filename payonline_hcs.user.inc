@@ -34,6 +34,12 @@ function payonline_hcs_confirm_payment(){
 		drupal_exit();
 	}
 	
+    if(empty($lcFkey)){
+        watchdog('payonline-hcs-error', 'Payment false. LC_Fkey is empty.');
+		drupal_access_denied();
+		drupal_exit();
+    }
+    
 	$arrHash = array(
 		'DateTime' => $dateTime,
 		'TransactionID' => $trans,

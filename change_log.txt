@@ -1,3 +1,7 @@
+Version 1.0.2
+-Refactoring code of the multi-step payment form;
+-Now select the type of insurance by using #states, instead #ajax;
+
 Version 1.0.1
 -Add page with statistic;
 -Add index by order ID in 'payonline_hcs_payments' table;

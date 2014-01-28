@@ -251,7 +251,7 @@ function payonline_hcs_viewpayment($form = array(), &$form_state){
 		$val->summCommis							= number_format((($val->summ+$noBalans)*$val->commis)/100, 2, '.', ',');
 		$val->summItog								= number_format(((($val->summ+$noBalans)*$val->commis/100)+($val->summ+$noBalans)), 2, '.', ',');
 		$val->summ	 								= number_format((float)payonline_hcs_isset_var($val->summ), 2, '.', ',');
-		$val->pack_num  	 						= l($val->pp_pack_num, 'admin/payonline_hcs/packs/view/'.$val->pp_id);
+		$val->pack_num  	 						= l($val->pp_pack_num, 'admin/payonline_hcs/packs/view/'.$val->pp_id).'('.$val->pp_id.')';
 		unset($val->uid,$val->pp_pack_num,$val->pp_id);
 		$row	= (array)($val);
 		$rows[] = $row;
