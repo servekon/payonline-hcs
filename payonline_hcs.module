@@ -291,7 +291,7 @@ function payonline_hcs_payment_form($form, &$form_state){
     if ($step > 1){
         $form['prev'] = array(
             '#type' => 'submit',
-            '#value' => t('Previous'),
+            '#value' => t('Prev'),
             '#name' => 'prev',
             '#submit' => array('payonline_hcs_payment_form_previous_submit'),
             '#limit_validation_errors' => array(),
