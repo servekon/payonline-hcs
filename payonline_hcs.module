@@ -682,13 +682,8 @@ function payonline_hcs_check_status_payment_form_submit($form, &$form_state){
     
     $cntCookie = (int)isset($_COOKIE['Drupal_visitor_payonline_hcs_count_check_status']) ? $_COOKIE['Drupal_visitor_payonline_hcs_count_check_status'] : 0;
     $nextTime = (int)isset($_COOKIE['Drupal_visitor_payonline_hcs_next_time_check_status']) ? $_COOKIE['Drupal_visitor_payonline_hcs_next_time_check_status'] : time();
-    $cntCookie++;
-    $arrCookie = array(
-        'payonline_hcs_next_time_check_status'=>$nextTime+15,
-        'payonline_hcs_count_check_status'=>$cntCookie,
-    );
-    user_cookie_save($arrCookie);
-    if($cntCookie <= 3 and time() >= $nextTime){
+    
+    if($cntCookie < 3){
         $q = db_select('payonline_hcs_payments', 'p')
         ->fields('p', array('payment_adopted_status'))
         ->condition('lcoc_key', $ordernum)
@@ -702,18 +697,28 @@ function payonline_hcs_check_status_payment_form_submit($form, &$form_state){
             else{
                 drupal_set_message(t('Payment was successful.'));
             }
-            //~ $form_state['redirect'] = '';
         }
         else{
             drupal_set_message(t('Payment not found in database.'), 'error');
             $form_state['rebuild'] = TRUE;
         }
-        $arrCookie = array(
-            'payonline_hcs_next_time_check_status'=>time()+1800,
-            'payonline_hcs_count_check_status'=>0,
-        );
-        user_cookie_save($arrCookie);
     }
+    
+    $cntCookie++;
+    $arrCookie = array(
+        'payonline_hcs_count_check_status'=>$cntCookie,
+        'payonline_hcs_next_time_check_status'=>$nextTime+700,
+    );
+    
+    if($cntCookie == 3){
+        $arrCookie['payonline_hcs_next_time_check_status'] = time()+1800;
+    }
+    
+    if(time() >= $nextTime){
+        $arrCookie['payonline_hcs_count_check_status'] = 0;
+    }
+    
+    user_cookie_save($arrCookie);
     
     if($cntCookie > 3 and time() < $nextTime){
         drupal_set_message(t('Too many requests per unit of time.'), 'warning');
