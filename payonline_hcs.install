@@ -329,7 +329,7 @@ function payonline_hcs_schema() {
             'pp_pack_num'=>array('pp_pack_num'),
             'pp_operating_day'=>array('pp_operating_day')
         ),
-		'primary key' => array('id')
+		'primary key' => array('pp_id')
     );
 	
 	//~ To check the correctness of personal account number entry
