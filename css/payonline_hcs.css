@@ -1,5 +1,5 @@
-#block-payonline-hcs-pay-hcs-payform-block .form-text{
-	width: 100%;
+#block-payonline-hcs-pay-hcs-payform-block .form-text, #block-payonline-hcs-pay-hcs-check-status-form-block .form-text{
+	width: 95%;
 }
 
 .form-item-pay-hcs-strah img{
