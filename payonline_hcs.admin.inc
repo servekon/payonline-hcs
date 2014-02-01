@@ -7,15 +7,15 @@
 /**
  * Implementation of hook_admin().
  */
-
 function payonline_hcs_admin() {
- 	global $user;
+ 	global $user,$hcsPoArrPatt;
  	$lng	= $user->language;
  	$form['payonline_hcs_mid'] = array(
 		'#type' => 'textfield',
 		'#title' => t('Merchant ID exchange system Payonline'),
 		'#default_value' => variable_get('payonline_hcs_mid', ''),
 		'#attributes'	=> array('autocomplete'=>array('off')),
+        '#required' => TRUE,
     );
  	
  	$form['payonline_hcs_private_key'] = array(
@@ -23,6 +23,7 @@ function payonline_hcs_admin() {
 		'#title' => t('Secret key exchange system Payonline'),
 		'#default_value' => variable_get('payonline_hcs_private_key', ''),
 		'#attributes'	=> array('autocomplete'=>array('off')),
+        '#required' => TRUE,
     );
  	$form['payonline_hcs_form_payment_page'] = array(
 		'#type' => 'select',
@@ -35,6 +36,20 @@ function payonline_hcs_admin() {
 			'https://secure.payonlinesystem.com/'.$lng.'/payment/' => t('Form of payment by credit card'),
 		),
 		'#default_value' => variable_get('payonline_hcs_form_payment_page', 'https://secure.payonlinesystem.com/ru/payment/select/'),
+    );
+ 	
+    $form['payonline_hcs_format_type_name_pack'] = array(
+		'#type' => 'select',
+		'#title' => t('Pattern to form the of name packs payment'),
+		'#options' => $hcsPoArrPatt,
+		'#default_value' => variable_get('payonline_hcs_format_type_name_pack', 1),
+    );
+    
+    $form['payonline_hcs_offer_node_id'] = array(
+		'#type' => 'textfield',
+        '#required' => TRUE,
+		'#title' => t('Node ID with contract offer'),
+		'#default_value' => variable_get('payonline_hcs_offer_node_id', 0),
     );
     
     $form['payonline_hcs_commission'] = array(
@@ -51,36 +66,47 @@ function payonline_hcs_admin() {
 		'#default_value' => (int)variable_get('payonline_hcs_use_handbook_verify', 0),
     );
     
-    $form['payonline_hcs_home_insurance'] = array(
+    $form['pay_hcs_strah_fieldset'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Insurance'),
+      '#weight' => 10,
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
+    );
+    
+    $form['pay_hcs_strah_fieldset']['payonline_hcs_home_insurance'] = array(
 		'#type' => 'textfield',
 		'#title' => t('Home insurance'),
 		'#default_value' => variable_get('payonline_hcs_home_insurance', 0),
     );
     
-    $form['payonline_hcs_liability_insurance'] = array(
+    $form['pay_hcs_strah_fieldset']['payonline_hcs_liability_insurance'] = array(
 		'#type' => 'textfield',
 		'#title' => t('Third party liability insurance'),
 		'#default_value' => variable_get('payonline_hcs_liability_insurance', 0),
     );
     
-    $form['payonline_hcs_full_insurance'] = array(
+    $form['pay_hcs_strah_fieldset']['payonline_hcs_full_insurance'] = array(
 		'#type' => 'textfield',
 		'#title' => t('Full insurance'),
 		'#default_value' => variable_get('payonline_hcs_full_insurance', 0),
     );
     
-    $form['payonline_hcs_offer_node_id'] = array(
-		'#type' => 'textfield',
-		'#title' => t('Node ID with contract offer'),
-		'#default_value' => variable_get('payonline_hcs_offer_node_id', 0),
-    );
-		
-	return system_settings_form($form);
+    $form['#validate'][] = 'payonline_hcs_admin_validate';
+    
+    return system_settings_form($form);
+}
+
+function payonline_hcs_admin_validate($form, &$form_state){
+    if(empty($form_state['values']['payonline_hcs_offer_node_id'])){
+        form_set_error('payonline_hcs_offer_node_id', t('Offer node ID must be greater than zero.'));
+    }
 }
 
 function payonline_hcs_viewpayment($form = array(), &$form_state){
 	global $user;
 	$pathModule = $icoFilter = '';
+    $collapsed = true;
     
     if($user->uid == 0){
         drupal_access_denied();
@@ -95,10 +121,9 @@ function payonline_hcs_viewpayment($form = array(), &$form_state){
 		$pathModule = base_path().drupal_get_path('module', 'payonline_hcs').'/images/';
         $icoFilter	= '<img src="'.$pathModule.'filter.png" alt="Filter" title="Filter" width="10" align="middle" />';
         $arg = (string)payonline_hcs_isset_var($form_state['input']['pay_hcs_filter_text']);
-		$collapsed = true;
 		$argType = (int)payonline_hcs_isset_var($form_state['input']['pay_hcs_filter_type']);
 		
-		if(((bool)$arg) == true){
+		if((((bool)$arg) == true) or ($argType == 3 and ((bool)$arg) == false)){
 			$collapsed = false;
 		}
 		
@@ -126,6 +151,11 @@ function payonline_hcs_viewpayment($form = array(), &$form_state){
 			'#value' => $arg,
 			'#title' => t('Search'),
 			'#weight' => 2,
+            '#states' => array(
+                'disabled' => array(
+                    'select[name="pay_hcs_filter_type"]' => array('value' => 3),
+                ),
+            ),
 		);
 		
 		$form['pay_hcs_filter_payonline']['actions'] = array(
@@ -211,7 +241,7 @@ function payonline_hcs_viewpayment($form = array(), &$form_state){
             $query->fields('pack', array('pp_id','pp_pack_num'));
         }
         
-		if($isAdmin and !empty($arg)){
+		if(!$collapsed){
 			switch($argType){
 				case 1: default:
 					$query->condition('pays.lc_fkey', '%'.db_like($arg).'%', 'LIKE');
@@ -241,7 +271,7 @@ function payonline_hcs_viewpayment($form = array(), &$form_state){
 		$val->provider 								= $arrProv[$user->language][(string)$val->provider];
 		if($isAdmin){
 			if(empty($val->uid)){
-                $val->name = l($gTxt, 'javascript:', array('attributes'=>array('class'=>array('hcs-filter-link'),'onclick'=>'javascript:jQuery("#edit-pay-hcs-filter-text").val("'.$gTxt.'"); jQuery("#edit-pay-hcs-filter-payonline").removeClass("collapsed"); jQuery("#edit-pay-hcs-filter-type").val("3"); jQuery(".fieldset-wrapper").show(); return false;')));
+                $val->name = l($gTxt, 'javascript:', array('attributes'=>array('class'=>array('hcs-filter-link'),'onclick'=>'javascript:jQuery("#edit-pay-hcs-filter-payonline").removeClass("collapsed"); jQuery("#edit-pay-hcs-filter-type").val("3").change(); jQuery(".fieldset-wrapper").show(); return false;')));
             }
             else{
                 $val->name	 							= l($val->name, 'user/'.$val->uid.'/edit');
@@ -295,9 +325,9 @@ function payonline_hcs_add_pack_form(){
 	
 	$coutnPay	= 0;
 	$summ 		= 0;
+    $form = array();
 	
-	$form = array();
-	if(payonline_hcs_avaliable_payments_for_packs($coutnPay, $summ)){
+    if(payonline_hcs_avaliable_payments_for_packs($coutnPay, $summ)){
 		$form['payonline_hcs_pack_operating_day'] = array(
 			'#type' => 'textfield',
 			'#title' => t('Operating day'),
@@ -335,11 +365,15 @@ function payonline_hcs_add_pack_form(){
  * Submit add pack form
  * */
 function payonline_hcs_add_pack_form_submit($form, &$form_state){
-	global $user;
+	global $user,$hcsPoArrPatt;
 	
 	$operDay	= check_plain($form_state['input']['payonline_hcs_pack_operating_day']);
-	$packNum	= 'p'.date('dm');
-	$packSum	= check_plain($form['payonline_hcs_pack_summ']['#default_value']);
+	
+    $packNum    = $hcsPoArrPatt[variable_get('payonline_hcs_format_type_name_pack', 1)];
+    $packNum    = preg_replace('/(\(.*\))|(\[)|(\])/', '', $packNum);
+    $packNum    = strftime($packNum);
+    
+    $packSum	= check_plain($form['payonline_hcs_pack_summ']['#default_value']);
 	$packCount	= check_plain($form['payonline_hcs_pack_count_payments']['#default_value']);
 	
 	$packId		= payonline_hcs_add_new_pack($operDay, $packNum, $packSum, $packCount);

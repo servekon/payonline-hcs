@@ -1,13 +1,36 @@
 <?php
 define('AP_PAYONLINE_PATH_MODULE', (string)base_path().drupal_get_path('module', 'payonline_hcs'));
-global $rublPay,$summWithProc,$paySummProc;
+global $rublPay,$summWithProc,$paySummProc,$hcsPoArrPatt;
 $rublPay = '<img alt="rublPay" style="height: 10px;" src="'.AP_PAYONLINE_PATH_MODULE.'/images/rubl.gif" />';
 $summWithProc=$paySummProc=0;
+$hcsPoArrPatt = array(
+    1 => 'p[%d%m](p'.date('dm').')',
+    2 => 'p[%d%m%y](p'.date('dmy').')',
+    3 => 'p[%d%m%Y](p'.date('dmY').')',
+    4 => 'p[%m%d](p'.date('md').')',
+    5 => 'p[%y%m%d](p'.date('ymd').')',
+    6 => 'p[%Y%m%d](p'.date('Ymd').')',
+    7 => 'p[%d-%m-%y](p'.date('d-m-y').')',
+    8 => 'p[%d%m%Y](p'.date('d-m-Y').')',
+    9 => 'p[%m-%d](p'.date('m-d').')',
+    10 => 'p[%y-%m-%d](p'.date('y-m-d').')',
+    11 => 'p[%Y-%m-%d](p'.date('Y-m-d').')',
+    12 => 'payonline[%d%m%y](payonline'.date('dmy').')',
+    14 => 'payonline[%d%m%Y](payonline'.date('dmY').')',
+    15 => 'payonline[%m%d](payonline'.date('md').')',
+    16 => 'payonline[%y%m%d](payonline'.date('ymd').')',
+    17 => 'payonline[%Y%m%d](payonline'.date('Ymd').')',
+    18 => 'payonline[%d-%m-%y](payonline'.date('d-m-y').')',
+    19 => 'payonline[%d%m%Y](payonline'.date('d-m-Y').')',
+    20 => 'payonline[%m-%d](payonline'.date('m-d').')',
+    21 => 'payonline[%y-%m-%d](payonline'.date('y-m-d').')',
+    22 => 'payonline[%Y-%m-%d](payonline'.date('Y-m-d').')',
+    
+);
 /**
 * Valid permissions for this module
 * @return array An array of valid permissions for the onthisdate module
 */
-
 function payonline_hcs_permission(){
   return array(
     'anonym_access_payonline_hcs' => array(
