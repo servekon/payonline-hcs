@@ -118,7 +118,7 @@ function payonline_hcs_viewpayment($form = array(), &$form_state){
 	$isAdmin	= user_access('administer_payonline_hcs');
 	
     if($isAdmin){
-		$pathModule = base_path().drupal_get_path('module', 'payonline_hcs').'/images/';
+		$pathModule = AP_PAYONLINE_PATH_MODULE.'/images/';
         $icoFilter	= '<img src="'.$pathModule.'filter.png" alt="Filter" title="Filter" width="10" align="middle" />';
         $arg = (string)payonline_hcs_isset_var($form_state['input']['pay_hcs_filter_text']);
 		$argType = (int)payonline_hcs_isset_var($form_state['input']['pay_hcs_filter_type']);

@@ -70,7 +70,7 @@ function payonline_hcs_confirm_payment(){
 			
 			if($qCheck){
 				watchdog('payonline-hcs-error', 'Payment false. Payment exists in the database.');
-				drupal_access_denied();
+				drupal_deliver_page(t('Payment false. Payment exists in the database.'));
 				drupal_exit();
 			}
 			
@@ -98,7 +98,8 @@ function payonline_hcs_confirm_payment(){
 			  ))
 			->execute();
 			watchdog('payonline-hcs-info', 'Payment successful. Account number for payment: '.$lcoc.'; Provider: '.$payProv.'; Summ: '. $summ.'.');
-			return 'Payment processing is completed.';
+			drupal_deliver_page(t('Payment processing is completed.'));
+            drupal_exit();
 		}
 		catch(Exception $e){
 			watchdog_exception('payonline-hcs-error', $e);
