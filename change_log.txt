@@ -1,7 +1,13 @@
+Version 1.0.3
+-Added ability to the export settings for the payment packs(file encoding, add columns name in the first rows);
+-Added additional payments(electric,gas,entry phone);
+-Change field name from lcoc_key to order_id;
+
 Version 1.0.2
 -Refactoring code of the multi-step payment form;
 -Now select the type of insurance by using #states, instead #ajax;
 -Added patterns to form the of name packs payment;
+-Set valid HTTP Request for confirm payment;
 
 Version 1.0.1
 -Add page with statistic;

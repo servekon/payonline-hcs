@@ -1,6 +1,6 @@
 <?php
 define('AP_PAYONLINE_PATH_MODULE', (string)base_path().drupal_get_path('module', 'payonline_hcs'));
-global $rublPay,$summWithProc,$paySummProc,$hcsPoArrPatt;
+global $rublPay,$summWithProc,$paySummProc,$hcsPoArrPatt,$arrFileEncode;
 $rublPay = '<img alt="rublPay" style="height: 10px;" src="'.AP_PAYONLINE_PATH_MODULE.'/images/rubl.gif" />';
 $summWithProc=$paySummProc=0;
 $hcsPoArrPatt = array(
@@ -26,6 +26,10 @@ $hcsPoArrPatt = array(
     21 => 'payonline[%y-%m-%d](payonline'.date('y-m-d').')',
     22 => 'payonline[%Y-%m-%d](payonline'.date('Y-m-d').')',
     
+);
+$arrFileEncode=array(
+    1 => 'UTF-8',
+    2 => 'Windows-1251',
 );
 /**
 * Valid permissions for this module
@@ -157,9 +161,8 @@ function payonline_hcs_menu() {
 	);
 	
 	$menu['admin/payonline_hcs/configure/import'] = array(
-		'title' => 'Handbook with the room flats',
-		'page callback' => 'drupal_get_form',
-		'page arguments' => array('payonline_hcs_fill_pan_flats_form'),
+		'title' => 'Handbooks',
+		'page callback' => 'payonline_hcs_fill_handbooks_page',
 		'access arguments' => array('administer_payonline_hcs'),
 		'file' => 'payonline_hcs.admin.inc',
 		'type' => MENU_LOCAL_TASK,
@@ -220,6 +223,19 @@ function payonline_hcs_block_info(){
 		'pages' => 'payonline-hcs/check-status',
 	);
 	return $blocks;
+}
+
+/**
+ * Implements hook_forms().
+ * Need to accommodate multiple forms of payment on a single page.
+ */
+function payonline_hcs_forms($form_id, $args) {
+  $forms = array();
+  if(strpos($form_id, 'payonline_hcs_form_fill_handbooks_with_') !== false){
+    $forms[$form_id]['callback'] = 'payonline_hcs_fill_handbooks_form';
+    $forms[$form_id]['callback arguments'] = $args;
+  }
+  return $forms;
 }
 
 /**
@@ -346,19 +362,48 @@ function payonline_hcs_step_one_payment_form_validate($form, &$form_state){
 	$addr 	= array();
 	$fls 	= payonline_hcs_isset_var($form_state['values']['pay_hcs_lc_fkey']);
 	$flat	= payonline_hcs_isset_var($form_state['values']['pay_hcs_room_flats']);
-	
-	if(variable_get('payonline_hcs_use_handbook_verify', 0) > 0){
+	$elect	= payonline_hcs_isset_var($form_state['values']['pay_hcs_electric']);
+	$gas	= payonline_hcs_isset_var($form_state['values']['pay_hcs_gas']);
+    
+    if(variable_get('payonline_hcs_use_handbook_verify', 0) > 0){
 		$addr = db_select('payonline_hcs_pan_flats', 'ch')
 		->fields('ch', array('id'))
 		->condition('pf_lc_fkey', check_plain(trim($fls)))
 		->condition('pf_flat', check_plain(trim($flat)))
 		->range(0,1)
-		->execute()->fetchAssoc();	
+		->execute()->fetchAssoc();
+        if(empty($addr) and variable_get('payonline_hcs_use_handbook_verify', 0) > 0){
+            form_set_error('pay_hcs_lc_fkey', t('Personal account number does not match with the number of flats.'));
+        }
 	}
 	
-	if(empty($addr) and variable_get('payonline_hcs_use_handbook_verify', 0) > 0){
-		form_set_error('pay_hcs_lc_fkey', t('Personal account number does not match with the number of flats.'));
-	}
+    if(!empty($elect)){
+        $epin = db_select('payonline_hcs_electric_pins', 'ep')
+		->fields('ep', array('ep_pin'))
+		->condition('ep_lc_fkey', check_plain(trim($fls)))
+		->range(0,1)
+		->execute()->fetchObject();
+        if($epin){
+            $form_state['values']['pay_hcs_electric_pin'] = $epin->ep_pin;
+        }
+        else{
+            form_set_error('pay_hcs_lc_fkey', t('For this personal account number does not found the electric PIN. Payment for the electric power impossible.'));
+        }
+    }
+    
+    if(!empty($gas)){
+        $egas = db_select('payonline_hcs_gas_pins', 'gp')
+		->fields('gp', array('gp_pin'))
+		->condition('gp_lc_fkey', check_plain(trim($fls)))
+		->range(0,1)
+		->execute()->fetchObject();
+        if($egas){
+            $form_state['values']['pay_hcs_gas_pin'] = $egas->gp_pin;
+        }
+        else{
+            form_set_error('pay_hcs_lc_fkey', t('For this personal account number does not found the gas PIN.'));
+        }
+    }
 }
 /*
  * Go to back previos step
@@ -399,7 +444,7 @@ function payonline_hcs_payment_form_next_submit($form, &$form_state){
  * */
 function payonline_hcs_step_one_payment_form($form, &$form_state){
     global $rublPay;
-    $form = array();
+    $form = $additional = array();
     $form['pay_hcs_lc_fkey'] = array(
         '#type' => 'textfield',
         '#title' => t('Personal account number'),
@@ -471,11 +516,60 @@ function payonline_hcs_step_one_payment_form($form, &$form_state){
         ),
     );
     
+    if(variable_get('payonline_hcs_electric', 0) > 0){
+        $additional[]['pay_hcs_electric'] = array(
+            '#type' => 'textfield',
+            '#title' => t('Electric power'),
+            '#default_value' => !empty($form_state['values']['pay_hcs_electric']) ? (float)$form_state['values']['pay_hcs_electric'] : '',
+            '#weight' => 1,
+        );
+    }
+    
+    if(variable_get('payonline_hcs_gas', 0) > 0){
+        $additional[]['pay_hcs_gas'] = array(
+            '#type' => 'textfield',
+            '#title' => t('Gas'),
+            '#default_value' => !empty($form_state['values']['pay_hcs_gas']) ? (int)$form_state['values']['pay_hcs_gas'] : '',
+            '#weight' => 3,
+        );
+    }
+    
+    if(variable_get('payonline_hcs_entry_phone', 0) > 0){
+        $additional[]['pay_hcs_entry_phone'] = array(
+            '#type' => 'textfield',
+            '#title' => t('Entry phone'),
+            '#default_value' => !empty($form_state['values']['pay_hcs_entry_phone']) ? (float)$form_state['values']['pay_hcs_entry_phone'] : '',
+            '#weight' => 5,
+        );
+    }
+    
+    if(!empty($additional)){
+        $collapsed = true;
+        $addCollapsed=0;
+        $form['pay_hcs_additional_fieldset'] = array(
+          '#type' => 'fieldset',
+          '#title' => t('Additional payments'),
+          '#weight' => 7,
+          '#collapsible' => TRUE,
+        );
+        foreach($additional as $key=>$val){
+            foreach($val as $pKey=>$pVal){
+                $form['pay_hcs_additional_fieldset'][$pKey] = $pVal;
+                $addCollapsed += (int)$pVal['#default_value'];
+            }
+        } 
+        if($addCollapsed > 0){
+            $collapsed = false;
+        }
+        $form['pay_hcs_additional_fieldset']['#collapsed'] = $collapsed;
+        
+    }
+    
     $form['pay_hcs_peni'] = array(
         '#type' => 'textfield',
         '#title' => t('Peni'),
         '#default_value' => !empty($form_state['values']['pay_hcs_peni']) ? $form_state['values']['pay_hcs_peni'] : '',
-        '#weight' => 8,
+        '#weight' => 9,
     );
     return $form;
 }
@@ -507,8 +601,14 @@ function payonline_hcs_step_two_payment_form($form, &$form_state){
     $sum 		= (float)$form_state['values']['pay_hcs_sum'];
     $sum100 	= $sum;
     $peni 		= (float)$form_state['values']['pay_hcs_peni'];
+    $electSum	= (float)payonline_hcs_isset_var($form_state['values']['pay_hcs_electric']);
+    $gasSum	    = (float)payonline_hcs_isset_var($form_state['values']['pay_hcs_gas']);
+    $enPhoneSum = (float)payonline_hcs_isset_var($form_state['values']['pay_hcs_entry_phone']);
     $strahSum 	= (float)$strahArr[$form_state['values']['pay_hcs_strah']];
     $sum 		+= $strahSum;
+    $sum 		+= $electSum;
+    $sum 		+= $gasSum;
+    $sum 		+= $enPhoneSum;
     $sum 		+= $peni;
 
     if($sum100 <= 0){
@@ -546,13 +646,20 @@ function payonline_hcs_step_two_payment_form($form, &$form_state){
             '#weight' => 4,
         );
     }
-    
     if($strahSum > 0){
         $form['pay_hcs_sum_detail']['#markup'] .= t('Insurance').': <strong>'.$strahSum.'</strong>'.$rublPay.'. ';
     }
-    
     if($peni > 0){
         $form['pay_hcs_sum_detail']['#markup'] .= t('Peni').': <strong>'.$peni.'</strong>'.$rublPay.'.';
+    }
+    if($electSum > 0){
+        $form['pay_hcs_sum_detail']['#markup'] .= '<br />&nbsp;'.t('Electric power').': <strong>'.$electSum.'</strong>'.$rublPay.'.';
+    }
+    if($gasSum > 0){
+        $form['pay_hcs_sum_detail']['#markup'] .= '&nbsp;'.t('Gas').': <strong>'.$gasSum.'</strong>'.$rublPay.'.';
+    }
+    if($enPhoneSum > 0){
+        $form['pay_hcs_sum_detail']['#markup'] .= '&nbsp;'.t('Entry phone').': <strong>'.$enPhoneSum.'</strong>'.$rublPay.'.';
     }
     
     $arrForm = array(
@@ -591,6 +698,9 @@ function payonline_hcs_step_two_payment_form($form, &$form_state){
         'pay_hcs_home_insurance' => 0,
         'pay_hcs_liability_insurance' => 0,
         'pay_hcs_full_insurance' => 0,
+        'pay_hcs_electric_sum' => $electSum,
+        'pay_hcs_gas_sum' => $gasSum,
+        'pay_hcs_entry_phone_sum' => $enPhoneSum,
     );
     
     //~ To break the types of insurance
@@ -604,6 +714,14 @@ function payonline_hcs_step_two_payment_form($form, &$form_state){
         case 3: case 4:
             $arrForm['pay_hcs_full_insurance'] = $strahSum;
         break;
+    }
+    
+    if(!empty($form_state['values']['pay_hcs_electric_pin'])){
+        $arrForm['pay_hcs_electric_pin'] = $form_state['values']['pay_hcs_electric_pin'];
+    }
+    
+    if(!empty($form_state['values']['pay_hcs_gas_pin'])){
+        $arrForm['pay_hcs_gas_pin'] = $form_state['values']['pay_hcs_gas_pin'];
     }
     
     foreach($arrForm as $key=>$val){
@@ -660,7 +778,7 @@ function payonline_hcs_payment_form_submit($form, &$form_state){
     unset($form_state['values']['pay_hcs_user_strah']);
     unset($form_state['values']['pay_hcs_room_flats']);
     unset($form_state['values']['submit']);
-    //~ debug($form_state['values']);
+    //~ debug($form_state['values']); $form_state['rebuild']=true; return false;
     drupal_goto(url(variable_get('payonline_hcs_form_payment_page', 'https://secure.payonlinesystem.com/ru/payment/select/')), array('query'=>$form_state['values']));
 }
 
@@ -709,7 +827,7 @@ function payonline_hcs_check_status_payment_form_submit($form, &$form_state){
     if($cntCookie < 3){
         $q = db_select('payonline_hcs_payments', 'p')
         ->fields('p', array('payment_adopted_status'))
-        ->condition('lcoc_key', $ordernum)
+        ->condition('order_id', $ordernum)
         ->condition('lc_fkey', $lcfkey)
         ->execute()->fetchObject();
         
@@ -757,7 +875,7 @@ function payonline_hcs_check_status_payment_form_submit($form, &$form_state){
 function payonline_hcs_help($path) {
   switch ($path) {
     case 'admin/payonline_hcs/configure/import':
-		return t('This handbook required for additional verify of personal account number input.');
+		return t('File formats for all handbooks must be unified. The first column should be a personal account number, the second field must be a number of apartment or electric PIN or gas\'s PIN.<br />Example: %example', array('%example'=>'"1234567";"7654321"'));
 	break;
   }
 }

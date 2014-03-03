@@ -17,7 +17,12 @@ function payonline_hcs_confirm_payment(){
 	$liabIns		= (float)payonline_hcs_isset_var($_GET['pay_hcs_liability_insurance']);
 	$fullIns		= (float)payonline_hcs_isset_var($_GET['pay_hcs_full_insurance']);
 	$peni			= (float)payonline_hcs_isset_var($_GET['pay_hcs_peni']);
+	$electric		= (float)payonline_hcs_isset_var($_GET['pay_hcs_electric_sum']);
+	$gas			= (float)payonline_hcs_isset_var($_GET['pay_hcs_gas_sum']);
+	$entry_phone	= (float)payonline_hcs_isset_var($_GET['pay_hcs_entry_phone_sum']);
 	$lcFkey			= (string)payonline_hcs_isset_var($_GET['pay_hcs_lc_fkey']);
+	$elec_pin		= (string)payonline_hcs_isset_var($_GET['pay_hcs_electric_pin']);
+	$gas_pin		= (string)payonline_hcs_isset_var($_GET['pay_hcs_gas_pin']);
 	
 	$summWithoutProc = $summ;
 	$proc = 0;
@@ -62,7 +67,7 @@ function payonline_hcs_confirm_payment(){
 		try{
 			$qCheck	= db_select('payonline_hcs_payments', 'pp')
 			->fields('pp', array('id'))
-			->condition('lcoc_key', $lcoc)
+			->condition('order_id', $lcoc)
 			->condition('date_adoption_payment_in_payonline', $dateTime)
 			->execute()->fetchField();
 			
@@ -74,12 +79,12 @@ function payonline_hcs_confirm_payment(){
 				drupal_exit();
 			}
 			
-			$summWithoutProc = $summWithoutProc-$homeIns-$liabIns-$fullIns-$peni;
+			$summWithoutProc = $summWithoutProc-$homeIns-$liabIns-$fullIns-$peni-$electric-$gas-$entry_phone;
 			
 			$nid = db_insert('payonline_hcs_payments')
 			->fields(array(
 				'uid' => $uid,
-				'lcoc_key' => $lcoc,
+				'order_id' => $lcoc,
 				'lc_fkey' => $lcFkey,
 				'currency' => $currency,
 				'provider' => $payProv,
@@ -90,10 +95,14 @@ function payonline_hcs_confirm_payment(){
 				'liability_insurance' => $liabIns,
 				'full_insurance' => $fullIns,
 				'peni' => $peni,
+				'electric' => $electric,
+				'gas' => $gas,
+				'entry_phone' => $entry_phone,
+				'electric_pin' => $elec_pin,
+				'gas_pin' => $gas_pin,
 				'merchant_id' => variable_get('payonline_hcs_mid', ''),
 				'payment_adopted_status' => 1,
 				'date_adoption_payment' => date('Y-m-d H:i:s'),
-				//~ 'date_adoption_payment_in_payonline' => format_date(strtotime($dateTime)+date('Z'), 'custom', 'Y-m-d H:i:s', 'Europe/Moscow'),
 				'date_adoption_payment_in_payonline' => $dateTime,
 			  ))
 			->execute();
