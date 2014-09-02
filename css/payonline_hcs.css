@@ -1,7 +1,12 @@
-#block-payonline-hcs-pay-hcs-payform-block .form-text{
-	width: 100%;
+#block-payonline-hcs-pay-hcs-payform-block .form-text, #block-payonline-hcs-pay-hcs-check-status-form-block .form-text{
+	width: 95%;
 }
 
 .form-item-pay-hcs-strah img{
 	height:12px;
+}
+
+.hcs-filter-link,.hcs-filter-link:hover{
+    text-decoration:none;
+    border-bottom: dashed 1px;
 }
