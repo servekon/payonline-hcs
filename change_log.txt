@@ -1,3 +1,6 @@
+Version 1.0.5
+-Added ability to configure the maximum amount of payment;
+
 Version 1.0.4
 -Refactoring code, remove global variables;
 

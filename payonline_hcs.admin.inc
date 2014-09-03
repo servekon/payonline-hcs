@@ -42,6 +42,14 @@ function payonline_hcs_admin() {
     '#required' => TRUE,
   );
   
+  $form['pay_hcs_main_fieldset']['payonline_hcs_max_sum'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Max sum of payment'),
+    '#default_value' => variable_get('payonline_hcs_max_sum', 30000),
+    '#attributes'  => array('autocomplete'=>array('off')),
+    '#required' => TRUE,
+  );
+  
   $form['pay_hcs_main_fieldset']['payonline_hcs_form_payment_page'] = array(
     '#type' => 'select',
     '#title' => t('The form of the method of payment'),

@@ -575,6 +575,7 @@ function payonline_hcs_step_two_payment_form($form, &$form_state){
   $gasSum    = (float)payonline_hcs_isset_var($form_state['values']['pay_hcs_gas']);
   $enPhoneSum = (float)payonline_hcs_isset_var($form_state['values']['pay_hcs_entry_phone']);
   $strahSum   = (float)$strahArr[$form_state['values']['pay_hcs_strah']];
+  $maxSumPay = (float)variable_get('payonline_hcs_max_sum', 30000);
   $sum     += $strahSum;
   $sum     += $electSum;
   $sum     += $gasSum;
@@ -585,9 +586,10 @@ function payonline_hcs_step_two_payment_form($form, &$form_state){
     return $form;
   }
   
-  if($sum > 30000){
-    $sum = round((30000*100)/(100+variable_get('payonline_hcs_commission', 0)),2);
-    drupal_set_message(t('Amount does not exceed 30 000.'), 'warning', FALSE);
+  if($sum > $maxSumPay){
+    $sum = round(($maxSumPay*100)/(100+variable_get('payonline_hcs_commission', 0)),2);
+    $sum100 = $maxSumPay;
+    drupal_set_message(t('Amount does not exceed %sum.', array('%sum'=>$maxSumPay)), 'warning', FALSE);
   }
   
   $paySummProc   = 0;
