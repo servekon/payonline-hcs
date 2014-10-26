@@ -26,6 +26,13 @@ function payonline_hcs_admin() {
     '#group' => 'group_settings',
   );
   
+  $form['pay_hcs_main_fieldset']['payonline_hcs_use_handbook_verify'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Use an additional check on the room flats'),
+    '#return_value' => 1, 
+    '#default_value' => (int)variable_get('payonline_hcs_use_handbook_verify', 0),
+  );
+  
   $form['pay_hcs_main_fieldset']['payonline_hcs_mid'] = array(
     '#type' => 'textfield',
     '#title' => t('Merchant ID exchange system Payonline'),
@@ -46,7 +53,6 @@ function payonline_hcs_admin() {
     '#type' => 'textfield',
     '#title' => t('Max sum of payment'),
     '#default_value' => variable_get('payonline_hcs_max_sum', 30000),
-    '#attributes'  => array('autocomplete'=>array('off')),
     '#required' => TRUE,
   );
   
@@ -81,14 +87,21 @@ function payonline_hcs_admin() {
     '#type' => 'textfield',
     '#title' => t('Commission fee charged to users').'(%)',
     '#description' => t('If a user fee is not charged, the commission should be 0(zero)'),
-    '#default_value' => variable_get('payonline_hcs_commission', 0),
+    '#default_value' => (float)variable_get('payonline_hcs_commission', 0),
   );
   
-  $form['pay_hcs_main_fieldset']['payonline_hcs_use_handbook_verify'] = array(
+  $form['pay_hcs_main_fieldset']['payonline_hcs_include_commission'] = array(
     '#type' => 'checkbox',
-    '#title' => t('Use an additional check on the room flats'),
-    '#return_value' => 1, 
-    '#default_value' => (int)variable_get('payonline_hcs_use_handbook_verify', 0),
+    '#title' => t('Not include the commission in the total amount of payment'),
+    '#default_value' => variable_get('payonline_hcs_include_commission', 0),
+    '#states' => array(
+      'invisible' => array(
+        ':input[name="payonline_hcs_commission"]' => array('value' => 0),
+      ),
+      'disabled' => array(
+        ':input[name="payonline_hcs_commission"]' => array('value' => 0),
+      ),
+    ),
   );
   
   $form['pay_hcs_strah_fieldset'] = array(
@@ -197,11 +210,24 @@ function payonline_hcs_admin_validate($form, &$form_state){
   if(empty($form_state['values']['payonline_hcs_offer_node_id'])){
     form_set_error('payonline_hcs_offer_node_id', t('Offer node ID must be greater than zero.'));
   }
+  if(preg_match("/[^.\d]/i", $form_state['values']['payonline_hcs_commission'])){
+    form_set_error('payonline_hcs_commission', t("Field %field can be only digits and dot.", array("%field"=>t('Commission fee charged to users'))));
+  }
+  if(preg_match("/[^.\d]/i", $form_state['values']['payonline_hcs_home_insurance'])){
+    form_set_error('payonline_hcs_home_insurance', t("Field %field can be only digits and dot.", array("%field"=>t('Home insurance'))));
+  }
+  if(preg_match("/[^.\d]/i", $form_state['values']['payonline_hcs_liability_insurance'])){
+    form_set_error('payonline_hcs_liability_insurance', t("Field %field can be only digits and dot.", array("%field"=>t('Third party liability insurance'))));
+  }
+  if(preg_match("/[^.\d]/i", $form_state['values']['payonline_hcs_full_insurance'])){
+    form_set_error('payonline_hcs_full_insurance', t("Field %field can be only digits and dot.", array("%field"=>t('Full insurance'))));
+  }
 }
-
+/**
+ * View payments 
+ */
 function payonline_hcs_viewpayment($form = array(), &$form_state){
   global $user;
-  $icoFilter = '';
   $collapsed = true;
   
   if($user->uid == 0){
@@ -214,7 +240,12 @@ function payonline_hcs_viewpayment($form = array(), &$form_state){
   $isAdmin  = user_access('administer_payonline_hcs');
   
   if($isAdmin){
-    $icoFilter  = '<img src="'.AP_PAYONLINE_PATH_MODULE.'/images/filter.png" alt="Filter" title="Filter" width="10" align="middle" />';
+    drupal_add_library('system','ui.datepicker');
+    drupal_add_js('jQuery(document).ready(function(){jQuery( ".pickadate" ).datepicker({
+      dateFormat: "yy-mm-dd",
+      autoSize: true
+    });});', 'inline'); 
+    
     $arg = (string)payonline_hcs_isset_var($form_state['input']['pay_hcs_filter_text']);
     $argType = (int)payonline_hcs_isset_var($form_state['input']['pay_hcs_filter_type']);
     
@@ -265,6 +296,53 @@ function payonline_hcs_viewpayment($form = array(), &$form_state){
       '#type' => 'submit',
       '#value' => t('Cancel'),
     );
+    
+    $form['add_pack_checkbox'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Add selected payments in the new package of payment'),
+    );
+    $form['export_button']= array(
+      '#type' => 'submit',
+      '#submit' => array('_payonline_hcs_export_selected_payment_submit'),
+      '#value' => t('Export'),
+      '#states' => array(
+        'invisible' => array(
+          ':input[name="add_pack_checkbox"]' => array('checked' => TRUE),
+        ),
+      ),
+    );
+    $form['payonline_hcs_pack_operating_day'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Operating day'),
+      '#description' => t('Payments already assigned to other package of payment will be ignored.'),
+      '#value' => date('Y-m-d'),
+      '#size' => 10,
+      '#maxlength' => 10,
+      '#attributes' => array('class' => array('pickadate')),
+      '#states' => array(
+        'visible' => array(
+          ':input[name="add_pack_checkbox"]' => array('checked' => TRUE),
+        ),
+      ),
+    );
+    $form['add_to_pack_button']= array(
+      '#type' => 'submit',
+      '#submit' => array('_payonline_hcs_add_to_pack_selected_payment_submit'),
+      '#value' => t('Add to the pack'),
+      '#states' => array(
+        'visible' => array(
+          ':input[name="add_pack_checkbox"]' => array('checked' => TRUE),
+        ),
+      ),
+    );
+    //~ $form['acronym'] = array(
+      //~ '#type' => 'item',
+      //~ '#title' => t('Was not included in the payment amount'),
+    //~ );
+    $form['export_button_down'] = $form['export_button'];
+    $form['add_to_pack_button_down']  = $form['add_to_pack_button'];
+    $form['export_button_down']['#weight']  = 100;
+    $form['add_to_pack_button_down']['#weight'] = 101;
   }
   
   $arrProv['ru'] = array(
@@ -283,12 +361,8 @@ function payonline_hcs_viewpayment($form = array(), &$form_state){
     'YandexMoney' => 'YandexMoney',
   );
   
-  $header = array();
-  
-  if($isAdmin){
-    $header[] = array('data' => t('User'));
-  }
-  
+  $header = $rows = array();
+  //~ Headers for users, sortable.
   $headArr = array(
     array('data' => t('Personal account number'), 'field' => 'lc_fkey'),
     array('data' => t('Order number'), 'field' => 'order_id'),
@@ -301,29 +375,48 @@ function payonline_hcs_viewpayment($form = array(), &$form_state){
     array('data' => t('Peni')),
     array('data' => t('Commission')),
     array('data' => t('Sum').' + '.t('Commission')),
-    array('data' => t('Pack of payment number')),
   );
-  
-  foreach($headArr as $hval){
-    $header[] = $hval;
+  //~ Header for admin, is not sortable but with checkboxes
+  if($isAdmin){
+    $headArr = array(
+      'name' => t('User'),
+      'lc_fkey' => t('Personal account number'),
+      'order_id' => t('Order number'),
+      'date_adoption_payment_in_payonline' => t('Date adoption payment'),
+      'provider' => t('Payment tool'),
+      'currency' => t('Currency'),
+      'summ' => t('Sum'),
+      'home_insurance' => t('Insurance'),
+      'electric' => t('Additional payments'),
+      'peni' => t('Peni'),
+      'commis' => t('Commission'),
+      'summItog' => t('Sum').' + '.t('Commission'),
+      'pack_num' => t('Pack of payment number'),
+    );
   }
-  unset($hval);
-  
-  $rows = array();
+  foreach($headArr as $hkey=>$hval){
+    if($isAdmin){
+      $header[$hkey] = $hval;
+    }
+    else{
+      $header[] = $hval;
+    }
+  }
   
   try{
-    $query   = db_select('payonline_hcs_payments', 'pays')->extend('PagerDefault')  //Pager Extender
-    ->limit(25)
-    ->extend('TableSort')
-    ->orderByHeader($header);
+    $query   = db_select('payonline_hcs_payments', 'pays')->extend('PagerDefault')
+    ->limit(25);
     
     if($isAdmin){
       $query->leftJoin('users', 'u', 'pays.uid = u.uid');
       $query->leftJoin('payonline_hcs_payments_packs', 'pack', 'pack.pp_id = pays.status_payment');
-      $query->fields('u', array('uid','name'));
+      $query->fields('u', array('uid','name'))->orderBy('pays.id', 'DESC');
+    }
+    else{
+      $query->extend('TableSort')->orderByHeader($header);
     }
     
-    $query->fields('pays', array('lc_fkey', 'order_id', 'date_adoption_payment_in_payonline', 'provider', 'currency', 'summ', 'home_insurance', 'liability_insurance', 'full_insurance', 'electric', 'gas', 'electric_pin', 'gas_pin', 'entry_phone', 'peni', 'commis'))
+    $query->fields('pays', array('id', 'lc_fkey', 'order_id', 'date_adoption_payment_in_payonline', 'provider', 'currency', 'summ', 'home_insurance', 'liability_insurance', 'full_insurance', 'electric', 'gas', 'electric_pin', 'gas_pin', 'entry_phone', 'peni', 'commis', 'include_commis'))
     ->condition('pays.payment_adopted_status', 1, '=');
     
     //Allow for administrator view all payments
@@ -347,7 +440,6 @@ function payonline_hcs_viewpayment($form = array(), &$form_state){
         break;
       }
     }
-    
     $result = $query->execute();
   }
   catch(Exception $e){
@@ -355,28 +447,44 @@ function payonline_hcs_viewpayment($form = array(), &$form_state){
     drupal_set_message('Error. More information in '.l('syslog','admin/reports/dblog').'.<br />'.check_plain($e->getMessage()), 'error', FALSE);
     return $form;
   }
+  
   $noBalans = 0;
   $gTxt = t('Anonymous');
+  $notIncTxt = '<sup><acronym title="'.t('Was not included in the payment amount').'">[1]</acronym></sup>';
+  $arrUnset = array(
+    'id', 'uid', 'pp_pack_num', 'summCommis', 'pp_id',
+    'liability_insurance', 'full_insurance', 'electric_pin',
+    'gas', 'gas_pin', 'entry_phone', 'include_commis',
+  );
+  
   foreach($result as $key=>$val){
+    $order_id = $val->id;
     $val->date_adoption_payment_in_payonline  = format_date(strtotime($val->date_adoption_payment_in_payonline)+date('Z'), 'custom', 'd.m.Y H:i:s', 'Europe/Moscow');
-    $val->lc_fkey                = l($val->lc_fkey, 'javascript:', array('attributes'=>array('class'=>array('hcs-filter-link'),'onclick'=>'javascript:jQuery("#edit-pay-hcs-filter-text").val("'.$val->lc_fkey.'"); jQuery("#edit-pay-hcs-filter-payonline").removeClass("collapsed"); jQuery("#edit-pay-hcs-filter-type").val("1"); jQuery(".fieldset-wrapper").show(); return false;')));
-    $val->order_id                = l($val->order_id, 'javascript:', array('attributes'=>array('class'=>array('hcs-filter-link'),'onclick'=>'javascript:jQuery("#edit-pay-hcs-filter-text").val("'.$val->order_id.'"); jQuery("#edit-pay-hcs-filter-payonline").removeClass("collapsed"); jQuery("#edit-pay-hcs-filter-type").val("2"); jQuery(".fieldset-wrapper").show(); return false;')));
-    $val->provider                 = $arrProv[$user->language][(string)$val->provider];
+    $val->provider  = $arrProv[$user->language][(string)$val->provider];
     if($isAdmin){
+      $val->lc_fkey   = l($val->lc_fkey, 'javascript:', array('attributes'=>array('class'=>array('hcs-filter-link'),'onclick'=>'javascript:jQuery("#edit-pay-hcs-filter-text").val("'.$val->lc_fkey.'"); jQuery("#edit-pay-hcs-filter-payonline").removeClass("collapsed"); jQuery("#edit-pay-hcs-filter-type").val("1"); jQuery(".fieldset-wrapper").show(); return false;')));
+      $val->order_id  = l($val->order_id, 'javascript:', array('attributes'=>array('class'=>array('hcs-filter-link'),'onclick'=>'javascript:jQuery("#edit-pay-hcs-filter-text").val("'.$val->order_id.'"); jQuery("#edit-pay-hcs-filter-payonline").removeClass("collapsed"); jQuery("#edit-pay-hcs-filter-type").val("2"); jQuery(".fieldset-wrapper").show(); return false;')));
       if(empty($val->uid)){
-        $val->name = l($gTxt, 'javascript:', array('attributes'=>array('class'=>array('hcs-filter-link'),'onclick'=>'javascript:jQuery("#edit-pay-hcs-filter-payonline").removeClass("collapsed"); jQuery("#edit-pay-hcs-filter-type").val("3").change(); jQuery(".fieldset-wrapper").show(); return false;')));
+        $val->name  = l($gTxt, 'javascript:', array('attributes'=>array('class'=>array('hcs-filter-link'),'onclick'=>'javascript:jQuery("#edit-pay-hcs-filter-payonline").removeClass("collapsed"); jQuery("#edit-pay-hcs-filter-type").val("3").change(); jQuery(".fieldset-wrapper").show(); return false;')));
       }
       else{
-        $val->name                 = l($val->name, 'user/'.$val->uid.'/edit');
+        $val->name  = l($val->name, 'user/'.$val->uid.'/edit');
       }
     }
-    $noBalans                  = $val->home_insurance+$val->liability_insurance+$val->full_insurance+$val->peni+$val->electric+$val->gas+$val->entry_phone;
-    $val->summCommis              = number_format((($val->summ+$noBalans)*$val->commis)/100, 2, '.', ',');
-    $val->summItog                = number_format(((($val->summ+$noBalans)*$val->commis/100)+($val->summ+$noBalans)), 2, '.', ',');
-    $val->summ                   = number_format((float)payonline_hcs_isset_var($val->summ), 2, '.', ',');
+    $noBalans       = $val->home_insurance+$val->liability_insurance+$val->full_insurance;
+    $noBalans       += $val->peni+$val->electric+$val->gas+$val->entry_phone;
+    $val->summCommis  = (($val->summ+$noBalans)*$val->commis/100);
+    $val->summItog = $val->summCommis+$val->summ+$noBalans;
+    
     if(!empty($val->commis)){
-      $val->commis              .= '%,&nbsp;'.$val->summCommis;
+      $val->commis .= '%,&nbsp;'.number_format((float)$val->summCommis, 2, '.', ',');
     }
+    if($isAdmin and $val->include_commis == 1){
+      $val->commis .= '&nbsp;'.$notIncTxt;
+    }
+    _payonline_hcs_number_format($val->summ);
+    _payonline_hcs_number_format($val->summCommis);
+    _payonline_hcs_number_format($val->summItog);
     
     if(!empty($val->home_insurance)){
       $val->home_insurance = t('Home insurance short').':'.$val->home_insurance;
@@ -405,33 +513,48 @@ function payonline_hcs_viewpayment($form = array(), &$form_state){
     }
     
     if($isAdmin){
-      $val->pack_num                 = l($val->pp_pack_num, 'admin/payonline_hcs/packs/view/'.$val->pp_id).'('.$val->pp_id.')';
+      $val->pack_num = '';
+      if(!empty($val->pp_pack_num)){
+        $val->pack_num = l($val->pp_pack_num, 'admin/payonline_hcs/packs/view/'.$val->pp_id).'('.$val->pp_id.')';
+      }
     }
-    $arrUnset = array(
-      'uid', 'pp_pack_num', 'summCommis', 'pp_id',
-      'liability_insurance', 'full_insurance', 'electric_pin',
-      'gas', 'gas_pin', 'entry_phone',
-    );
     $row  = (array)($val);
     foreach($arrUnset as $uVal){
       unset($row[$uVal]);
     }
-    $rows[] = $row;
+    if($isAdmin){
+      $rows[$order_id] = $row;
+    }
+    else{
+      $rows[] = $row;
+    }
   }
   unset($key,$val);
   
-  $form['payonline_payments'] = array(
-    '#theme' => 'table',
-    '#header' => $header,
-    '#rows' => $rows,
-    '#pager' => theme('pager'),
-    '#empty' => t('No data.'),
-  );
+  if($isAdmin){
+    $form['payonline_payments'] = array(
+      '#type' => 'tableselect',
+      '#header' => $header,
+      '#options' => $rows,
+      '#empty' => t('No data.'),
+    );
+  }
+  else{
+    $form['payonline_payments'] = array(
+      '#theme' => 'table',
+      '#header' => $header,
+      '#rows' => $rows,
+      '#empty' => t('No data.'),
+    );
+  }
   $form['pager'] = array('#markup' => theme('pager'));
   
   return $form;
 }
 
+/**
+ * Sumbit for filter form of view payment
+ * */
 function payonline_hcs_viewpayment_submit($form, &$form_state){
   $op = $form_state['values']['op'];
   switch ($op) {
@@ -445,10 +568,38 @@ function payonline_hcs_viewpayment_submit($form, &$form_state){
 }
 
 /**
- * Add the pack of payment form
+ * Export manual selected payments
  * */
- 
-function payonline_hcs_add_pack_form(){
+function _payonline_hcs_export_selected_payment_submit($form, &$form_state){
+  $orders = array_filter($form_state['values']['payonline_payments']);
+  if (empty($orders)) {
+    drupal_set_message(t("No data."), 'warning', FALSE);
+    return false;
+  }
+  $opt = array('orders' => $orders);
+  _payonline_hcs_result_export(2, $opt);
+}
+
+/**
+ * Add manual selected payments into the package of payment
+ * */
+function _payonline_hcs_add_to_pack_selected_payment_submit($form, &$form_state){
+  $orders = array_filter($form_state['values']['payonline_payments']);
+  if (empty($orders)) {
+    drupal_set_message(t("No data."), 'warning', FALSE);
+    return false;
+  }
+  $packCount = $packSum = 0;
+  $operDay  = check_plain($form_state['input']['payonline_hcs_pack_operating_day']);
+  if(payonline_hcs_avaliable_payments_for_packs($packCount, $packSum, $orders)){
+    return _payonline_hcs_add_pack_exec($operDay, $packCount, $packSum, $orders);
+  }
+}
+
+/**
+ * Add the package of payment form
+ * */
+function payonline_hcs_add_pack_form($form, &$form_state){
   drupal_add_library('system','ui.datepicker');
   drupal_add_js('jQuery(document).ready(function(){jQuery( ".pickadate" ).datepicker({
     dateFormat: "yy-mm-dd",
@@ -493,34 +644,52 @@ function payonline_hcs_add_pack_form(){
 }
 
 /**
- * Submit add pack form
+ * Submit add package of payment form
  * */
 function payonline_hcs_add_pack_form_submit($form, &$form_state){
-  global $user;
-  
-  $hcsPoArrPatt = _payonline_hcs_pack_patterns();
-  
   $operDay  = check_plain($form_state['input']['payonline_hcs_pack_operating_day']);
-  
+  $packSum  = check_plain($form['payonline_hcs_pack_summ']['#default_value']);
+  $packCount  = check_plain($form['payonline_hcs_pack_count_payments']['#default_value']);
+  return _payonline_hcs_add_pack_exec($operDay, $packCount, $packSum);
+}
+
+/**
+ * Adding a new package of payment.
+ * Copying of payments in the table 'payonline_hcs_payments_reestr' with the number of new package payment.
+ * */
+function _payonline_hcs_add_pack_exec($operDay, $packCount, $packSum, $orders=array()){
+  $hcsPoArrPatt = _payonline_hcs_pack_patterns();
   $packNum  = $hcsPoArrPatt[variable_get('payonline_hcs_format_type_name_pack', 1)];
   $packNum  = preg_replace('/(\(.*\))|(\[)|(\])/', '', $packNum);
   $packNum  = strftime($packNum);
   
-  $packSum  = check_plain($form['payonline_hcs_pack_summ']['#default_value']);
-  $packCount  = check_plain($form['payonline_hcs_pack_count_payments']['#default_value']);
-  
   $packId    = payonline_hcs_add_new_pack($operDay, $packNum, $packSum, $packCount);
   
-  if($packId > 0){
+  if((int)$packId > 0){
     try{
-      //Fill payments reestr
-      $result = db_query('INSERT INTO 
-      {payonline_hcs_payments_reestr} 
-      (`pr_order_id`, `pr_lc_fkey`, `pack_id`, `pr_merchant_id`, `pr_transaction`, `pr_date_adoption_payment`, `pr_date_adoption_payment_in_payonline`, `pr_summ`, `pr_commis`, `pr_home_insurance`, `pr_liability_insurance`, `pr_full_insurance`, `pr_peni`, `pr_electric`, `pr_gas`, `pr_electric_pin`, `pr_gas_pin`, `pr_entry_phone`)
-      SELECT `order_id`, `lc_fkey`, '.$packId.', `merchant_id`, `transaction`, `date_adoption_payment`, `date_adoption_payment_in_payonline`, `summ`, `commis`, `home_insurance`, `liability_insurance`, `full_insurance`, `peni`, `electric`, `gas`, `electric_pin`, `gas_pin`, `entry_phone` FROM {payonline_hcs_payments} WHERE payment_adopted_status = 1 and status_payment = 0 and date_adoption_payment > \'1970-01-01\'
-      ')->rowCount();
+      $rFields = array(
+        'pr_order_id', 'pr_lc_fkey', 'pr_merchant_id', 'pr_transaction', 'pr_date_adoption_payment', 
+        'pr_date_adoption_payment_in_payonline', 'pr_summ', 'pr_commis', 'pr_include_commis',
+        'pr_home_insurance', 'pr_liability_insurance', 'pr_full_insurance', 'pr_peni',
+        'pr_electric', 'pr_gas', 'pr_electric_pin', 'pr_gas_pin', 'pr_entry_phone', 'pack_id',
+      );
+      $pFields = array(
+        'order_id', 'lc_fkey', 'merchant_id', 'transaction', 'date_adoption_payment',
+        'date_adoption_payment_in_payonline', 'summ', 'commis', 'include_commis',
+        'home_insurance', 'liability_insurance', 'full_insurance', 'peni',
+        'electric', 'gas', 'electric_pin', 'gas_pin', 'entry_phone',
+      );
+      $qSel = db_select('payonline_hcs_payments', 'p')->fields('p', $pFields)
+      ->condition('payment_adopted_status', 1)
+      ->condition('status_payment', 0)
+      ->condition('date_adoption_payment', '1970-01-01', '>');
+      if(!empty($orders) and is_array($orders)){
+        $qSel->condition('id', $orders, 'IN');
+      }
+      $qSel->addExpression($packId, 'pack_id');
       
-      if(!empty($result)){
+      $ins = db_insert('payonline_hcs_payments_reestr')->fields($rFields)->from($qSel)->execute();
+      if($ins){
         $updRes = db_query("UPDATE {payonline_hcs_payments} as upd INNER JOIN {payonline_hcs_payments_reestr} as pay ON upd.order_id=pay.pr_order_id SET upd.date_added_payment_to_pack ='".date('Y-m-d H:i:s')."', upd.status_payment = ".$packId." WHERE pay.pack_id='".$packId."'");
         drupal_set_message(t('Pack of payment was added.'));
         drupal_goto('admin/payonline_hcs/packs');
@@ -539,39 +708,49 @@ function payonline_hcs_add_pack_form_submit($form, &$form_state){
 /**
  * Check whether previously not exported payments
  * */
-function payonline_hcs_avaliable_payments_for_packs(&$countPay, &$summ){
+function payonline_hcs_avaliable_payments_for_packs(&$countPay, &$sum, $orders=array()){
   try{
-    $result = db_query("SELECT GROUP_CONCAT(DATE_FORMAT(date_adoption_payment_in_payonline,'%d.%m.%Y')) as date, sum(summ) as allSumm, COUNT(*) as count, 1 as keyid FROM {payonline_hcs_payments} WHERE payment_adopted_status = 1 and status_payment = 0 and date_adoption_payment > '1970-01-01' ORDER BY date_adoption_payment_in_payonline ASC")->fetchAllAssoc('keyid');
+    $q = db_select('payonline_hcs_payments', 'p');
+    $q->addExpression("GROUP_CONCAT(DATE_FORMAT(date_adoption_payment_in_payonline,'%d.%m.%Y'))", 'date');
+    $q->addExpression("sum(summ)", 'allSumm');
+    $q->addExpression("COUNT(*)", 'count');
+    $q = $q->condition('payment_adopted_status', 1)
+    ->condition('status_payment', 0)
+    ->condition('date_adoption_payment', '1970-01-01', '>')
+    ->orderBy('date_adoption_payment_in_payonline', 'ASC');
+    if(!empty($orders) and is_array($orders)){
+      $q->condition('id', $orders, 'IN');
+    }
+    $result = $q->execute()->fetchObject();
   }
   catch(Exception $e){
     watchdog_exception('payonline-hcs-error', $e);
     drupal_set_message('Error. More information in '.l('syslog','admin/reports/dblog').'.<br />'.check_plain($e->getMessage()), 'error', FALSE);
     return false;
   }
-  
-  if(empty($result[1]->date) or empty($result[1]->allSumm) or empty($result[1]->count)){
+  if(empty($result->date) or empty($result->allSumm) or empty($result->count)){
     drupal_set_message(t('No data.'),'warning', FALSE);
-    return false;
+    drupal_goto('admin/payonline_hcs/packs');
   }
   else{
-    $countPay    = $result[1]->count;
-    $summ      = $result[1]->allSumm;
-    $arrMonth     = array_unique(explode(",", $result[1]->date));
+    $countPay = $result->count;
+    $sum      = $result->allSumm;
+    $arrMonth = array_unique(explode(",", $result->date));
     if(sizeof($arrMonth) > 1){
-      $msgMonth   = 'Payment for the period of: %day.';
-      $days    = min($arrMonth).'-'.max($arrMonth);
+      $msgMonth = 'Payment for the period of: %day.';
+      $days = min($arrMonth).'-'.max($arrMonth);
     }
     else{
-      $msgMonth   = 'Day of payment: %day.';
-      $days    = $arrMonth[0];
+      $msgMonth = 'Day of payment: %day.';
+      $days = $arrMonth[0];
     }
-    drupal_set_message(t('This will create a pack of payment for a total of %sum and for a count payments of %count.', array('%sum'=>number_format($result[1]->allSumm, 2, '.', ' '),'%count'=>$result[1]->count)).'&nbsp;'.t($msgMonth, array('%day'=>$days)), 'status', FALSE);
+    drupal_set_message(t('This will create a pack of payment for a total of %sum and for a count payments of %count.', array('%sum'=>number_format($result->allSumm, 2, '.', ' '),'%count'=>$result->count)).'&nbsp;'.t($msgMonth, array('%day'=>$days)), 'status', FALSE);
     return true;
   }
 }
 
 /**
- * Add new payment pack. Summ and count payments gets from func. "avaliable_payments_for_packs"
+ * Add new package of payment. Summ and count payments gets from func. "avaliable_payments_for_packs"
  * */
 function payonline_hcs_add_new_pack($operDay, $packNum, $packSum, $packCount){
   global $user;
@@ -592,7 +771,6 @@ function payonline_hcs_add_new_pack($operDay, $packNum, $packSum, $packCount){
   }
 }
 
-
 /**
  * List all packs of payment
  * */
@@ -602,7 +780,6 @@ function payonline_hcs_viewpacks(){
   $icoList  = '<img src="'.AP_PAYONLINE_PATH_MODULE.'/images/list.gif" alt="" title="" width="20" />';
   $icoExcel  = '<img src="'.AP_PAYONLINE_PATH_MODULE.'/images/excel.gif" alt="" title="" width="20" />';
   $icoRemove  = '<img src="'.AP_PAYONLINE_PATH_MODULE.'/images/remove.gif" alt="" title="" width="20" />';
-  
   $attrLinks  = array('html'=>true, 'attributes'=>array('style'=>'vertical-align:top'));
   
   $header = array(
@@ -618,7 +795,6 @@ function payonline_hcs_viewpacks(){
     ->limit(25)
     ->extend('TableSort')
     ->orderByHeader($header);
-    
     $query->fields('packs', array('pp_id','pp_operating_day', 'pp_pack_num', 'pp_summ', 'pp_number_payments'));
     
     $result = $query->execute();
@@ -640,11 +816,15 @@ function payonline_hcs_viewpacks(){
   }
   unset($key,$val);
   
-  $output = theme('table', array('header'=>$header, 'rows'=>$rows, 'empty' => t('No data.')));
-  
+  $output = theme('table', array(
+      'header'=>$header,
+      'rows'=>$rows,
+      'empty' => t('No data.'),
+    )
+  );
   $output .= theme('pager',
     array(
-      'tags' => array()
+      'tags' => array(),
     )
   );
   return $output;
@@ -668,7 +848,7 @@ function payonline_hcs_viewreestrpack($packId = 0){
     array('data' => t('Date adoption payment in Payonline system'), 'field' => 'r.pr_date_adoption_payment_in_payonline','sort' => 'desc'),
     array('data' => t('Transaction number'), 'field' => 'r.pr_transaction'),
     array('data' => t('Commission').' (%)', 'field' => 'r.pr_commis'),
-    array('data' => t('The amount of commission').'(%)'),
+    array('data' => t('The amount of commission')),
     array('data' => t('Sum').' + '.t('Commission')),
   );
   $rows = array();
@@ -684,7 +864,7 @@ function payonline_hcs_viewreestrpack($packId = 0){
     
     $query->innerJoin('payonline_hcs_payments_packs', 'pp', 'pp.pp_id = r.pack_id');
     $query->fields('pp', array('pp_pack_num'));
-    $query->fields('r', array('pr_commis'));
+    $query->fields('r', array('pr_commis', 'pr_include_commis'));
     
     $result = $query->execute();
   }
@@ -694,15 +874,30 @@ function payonline_hcs_viewreestrpack($packId = 0){
     return '';
   }
   $noBalans = 0;
+  $notIncTxt = '<sup><acronym title="'.t('Was not included in the payment amount').'">[1]</acronym></sup>';
+  $arrUnset = array(
+    'id', 'pp_pack_num',
+    'pr_liability_insurance', 'pr_full_insurance', 'pr_electric_pin',
+    'pr_gas', 'pr_gas_pin', 'pr_entry_phone', 'pr_include_commis',
+  );
   foreach($result as $key=>$val){
     $namePack = $val->pp_pack_num;
-    $noBalans                  = $val->pr_home_insurance+$val->pr_liability_insurance+$val->pr_full_insurance+$val->pr_peni+$val->pr_electric+$val->pr_gas+$val->pr_entry_phone;
+    $noBalans = $val->pr_home_insurance+$val->pr_liability_insurance+$val->pr_full_insurance+$val->pr_peni+$val->pr_electric+$val->pr_gas+$val->pr_entry_phone;
     
     $val->pr_date_adoption_payment = format_date(strtotime($val->pr_date_adoption_payment), 'custom', 'd.m.Y H:i:s');
     $val->pr_date_adoption_payment_in_payonline = format_date(strtotime($val->pr_date_adoption_payment_in_payonline)+date('Z'), 'custom', 'd.m.Y H:i:s', 'Europe/Moscow');
     $val->summCommis              = number_format((($val->pr_summ+$noBalans)*$val->pr_commis)/100, 2, '.', ',');
-    $val->summItog                = number_format(((($val->pr_summ+$noBalans)*$val->pr_commis/100)+($val->pr_summ+$noBalans)), 2, '.', ',');
-    $val->pr_summ                = number_format($val->pr_summ, 2, '.', ',');
+    
+    if($val->pr_include_commis == 1){
+      $val->pr_commis .= '&nbsp;'.$notIncTxt;
+      $val->summItog = number_format(($val->pr_summ+$noBalans), 2, '.', ',');
+    }
+    else{
+      $val->summItog = number_format(((($val->pr_summ+$noBalans)*$val->pr_commis/100)+($val->pr_summ+$noBalans)), 2, '.', ',');
+    }
+    
+    $val->pr_summ = number_format($val->pr_summ, 2, '.', ',');
+    
     if(!empty($val->pr_home_insurance)){
       $val->pr_home_insurance = t('Home insurance short').':'.$val->pr_home_insurance;
     }
@@ -728,8 +923,11 @@ function payonline_hcs_viewreestrpack($packId = 0){
     if(!empty($val->pr_entry_phone)){
       $val->pr_electric .= '<br />'.t('Entry phone').':'.$val->pr_entry_phone;
     }
-    unset($val->id,$val->pp_pack_num,$val->pr_liability_insurance,$val->pr_full_insurance,$val->pr_electric_pin,$val->pr_gas,$val->pr_gas_pin,$val->pr_entry_phone);
+    
     $row  = (array)($val);
+    foreach($arrUnset as $uVal){
+      unset($row[$uVal]);
+    }
     $rows[] = $row;
   }
   unset($key,$val);
@@ -737,13 +935,11 @@ function payonline_hcs_viewreestrpack($packId = 0){
   drupal_set_message(t('Pack of payment number').':&nbsp;<strong>'.$namePack.'</strong>.');
   
   $output = theme('table', array('header'=>$header, 'rows'=>$rows, 'empty' => t('No data.')));
-  
   $output .= theme('pager',
     array(
-      'tags' => array()
+      'tags' => array(),
     )
   );
-  
   return $output;
 }
 
@@ -766,11 +962,12 @@ function _payonline_hcs_t_col(&$item, $key, $encode){
 function payonline_hcs_export_pack($packId = 0){
   global $user;
   $arrFileEncode = _payonline_hcs_encodes();
+  $incCommis = _payonline_hcs_txt_status_include_commission();
   $fencode = (int)variable_get('payonline_hcs_export_file_encode', 1);
   $encode = $arrFileEncode[$fencode];
   try{
     $query   = db_select('payonline_hcs_payments_reestr', 'r');
-    $query->fields('r', array('id','pr_lc_fkey', 'pr_order_id', 'pr_summ', 'pr_date_adoption_payment', 'pr_date_adoption_payment_in_payonline', 'pr_home_insurance', 'pr_liability_insurance', 'pr_full_insurance', 'pr_peni', 'pr_electric', 'pr_gas', 'pr_electric_pin', 'pr_gas_pin', 'pr_entry_phone', 'pr_commis', 'pr_transaction'));
+    $query->fields('r', array('id','pr_lc_fkey', 'pr_order_id', 'pr_summ', 'pr_date_adoption_payment', 'pr_date_adoption_payment_in_payonline', 'pr_home_insurance', 'pr_liability_insurance', 'pr_full_insurance', 'pr_peni', 'pr_electric', 'pr_gas', 'pr_electric_pin', 'pr_gas_pin', 'pr_entry_phone', 'pr_commis', 'pr_include_commis', 'pr_transaction'));
     $query->condition('r.pack_id',$packId, '=');
     $query->innerJoin('payonline_hcs_payments_packs', 'pp', 'pp.pp_id = r.pack_id');
     $query->fields('pp', array('pp_pack_num'));
@@ -794,19 +991,24 @@ function payonline_hcs_export_pack($packId = 0){
     $fp = fopen('php://output', 'w');
     if(variable_get('payonline_hcs_export_first_row_is_header', 0) > 0){
       $header = array_keys($rows[0]);
+      //~ Remove num pack
       array_pop($header);
-      $header[] = 'sumCommis';
+      //~ Moving the new field to the end of the array for compatibility with older versions
+      array_splice($header, -2, 1);
+      array_push($header, 'sumCommis', 'Include commission');
+      
       array_walk($header, '_payonline_hcs_t_col', $encode);
       fputcsv($fp, $header, ';', ' ');
     }
     foreach($rows as $rKey=>$rVal){
       unset($rVal['pp_pack_num']);
+      $rVal['pr_include_commis'] = $incCommis[$rVal['pr_include_commis']];
       $noBalans = $rVal['pr_home_insurance']+$rVal['pr_liability_insurance']+$rVal['pr_full_insurance']+$rVal['pr_peni']+$rVal['pr_electric']+$rVal['pr_gas']+$rVal['pr_entry_phone'];
-      $rVal['sumCommis'] = (($rVal['pr_summ']+$noBalans)*$rVal['pr_commis'])/100;
+      $rVal['sumCommis'] = round((($rVal['pr_summ']+$noBalans)*$rVal['pr_commis'])/100, 2);
+      $rVal['include_commis'] = $rVal['pr_include_commis'];unset($rVal['pr_include_commis']);
       foreach($rVal as $key=>$val){
         $values[] = decode_entities(strip_tags($val)); 
       }
-      $str = implode(';', $values);
       array_walk($values, '_payonline_hcs_t_col', $encode);
       fputcsv($fp, $values, ';', ' ');
       unset($values,$key,$val);
@@ -826,7 +1028,7 @@ function payonline_hcs_export_pack($packId = 0){
 /**
  * Export payments by date range
  * */
-function payonline_hcs_export_by_date_form(){
+function payonline_hcs_export_by_date_form($form, &$form_state){
   drupal_add_library('system','ui.datepicker');
   drupal_add_js('jQuery(document).ready(function(){jQuery( ".pickadate" ).datepicker({
     dateFormat: "yy-mm-dd",
@@ -834,10 +1036,6 @@ function payonline_hcs_export_by_date_form(){
   });});', 'inline'); 
   drupal_add_css('.form-item-pay-hcs-konsalt-payonline-pack-date-from {float: left; margin: 0 10px 0 0 !important;}',$option['type'] = 'inline');
 
-  $coutnPay  = 0;
-  $summ     = 0;
-  
-  $form = array();
   $form['payonline_hcs_pack_date_from'] = array(
     '#type' => 'textfield',
     '#title' => t('Start date'),
@@ -866,27 +1064,50 @@ function payonline_hcs_export_by_date_form(){
 }
 
 function payonline_hcs_export_by_date_form_submit($form, &$form_state){
-  global $user;
-  $arrFileEncode = _payonline_hcs_encodes();
-  $fencode = (int)variable_get('payonline_hcs_export_file_encode', 1);
-  $encode = $arrFileEncode[$fencode];
   $dFrom  = format_date(strtotime($form_state['input']['payonline_hcs_pack_date_from']), 'custom', 'Y-m-d H:i:s');
   $dTo  = format_date(strtotime($form_state['input']['payonline_hcs_pack_date_to']), 'custom', 'Y-m-d 23:59:59');
+  $opt = array('dFrom' => $dFrom, 'dTo' => $dTo);
+  
+  _payonline_hcs_result_export(1, $opt);
+}
+
+/**
+ * Export payments by date range or manual selection
+ * For export by date range in $opt array must be 'dFrom' and 'dTo' keys.
+ * For export by manual selection in $opt array must be 'orders' key.
+ */
+function _payonline_hcs_result_export($type, $opt=array()){
+  global $user;
+  $arrFileEncode = _payonline_hcs_encodes();
+  $incCommis = _payonline_hcs_txt_status_include_commission();
+  $fencode = (int)variable_get('payonline_hcs_export_file_encode', 1);
+  $encode = $arrFileEncode[$fencode];
+  
+  extract($opt);
   try{
-    $result  = db_select('payonline_hcs_payments', 'p')
-    ->fields('p',array('id', 'lc_fkey', 'order_id', 'summ', 'date_adoption_payment', 'date_adoption_payment_in_payonline', 'home_insurance', 'liability_insurance', 'full_insurance', 'peni', 'electric', 'gas', 'electric_pin', 'gas_pin', 'entry_phone', 'commis', 'transaction'))
-    ->condition('payment_adopted_status', array(1), '=')
-    ->condition('date_adoption_payment_in_payonline', array($dFrom, $dTo), 'BETWEEN')
-    ->execute();
+    $q  = db_select('payonline_hcs_payments', 'p')
+    ->fields('p',array('id', 'lc_fkey', 'order_id', 'summ', 'date_adoption_payment', 'date_adoption_payment_in_payonline', 'home_insurance', 'liability_insurance', 'full_insurance', 'peni', 'electric', 'gas', 'electric_pin', 'gas_pin', 'entry_phone', 'commis', 'include_commis', 'transaction'))
+    ->condition('payment_adopted_status', array(1), '=');
     
+    switch($type){
+      case 1:
+        $q->condition('date_adoption_payment_in_payonline', array($dFrom, $dTo), 'BETWEEN');
+        $filename   =  'export_payments_'.format_date(strtotime($dFrom), 'custom', 'd.m.Y').'-'.format_date(strtotime($dTo), 'custom', 'd.m.Y').'.csv';
+      break;
+      case 2:
+        $q->condition('id', $orders, 'IN');
+        $filename   =  'export_payments_manual_select_'.format_date(REQUEST_TIME, 'short').'.csv';
+      break;
+    }
+    
+    $result = $q->execute();
     $count  = $result->rowCount();
   
     if ($result == false OR empty($count)) {
       drupal_set_message(t("No data."), 'warning', FALSE);
       return false;
     }
-    $filename   =  'export_payments_'.format_date(strtotime($dFrom), 'custom', 'd.m.Y').'-'.format_date(strtotime($dTo), 'custom', 'd.m.Y').'.csv';
-    //~ drupal_add_http_header('Content-Type', 'text/csv; charset='.$encode);
+    
     drupal_add_http_header('Content-Type', 'text/csv');
     drupal_add_http_header('Content-Disposition', 'attachment; filename='. $filename);
     drupal_send_headers();
@@ -898,14 +1119,19 @@ function payonline_hcs_export_by_date_form_submit($form, &$form_state){
     $fp = fopen('php://output', 'w');
     if(variable_get('payonline_hcs_export_first_row_is_header', 0) > 0){
       $header = array_keys($rows[0]);
-      $header[] = 'sumCommis';
+      //~ Moving the new field to the end of the array for compatibility with older versions
+      array_splice($header, -2, 1);
+      array_push($header, 'sumCommis', 'Include commission');
+      
       array_walk($header, '_payonline_hcs_t_col', $encode);
       fputcsv($fp, $header, ';', ' ');
     }
     
     foreach($rows as $rKey=>$rVal){
+      $rVal['include_commis'] = $incCommis[$rVal['include_commis']];
       $noBalans = $rVal['home_insurance']+$rVal['liability_insurance']+$rVal['full_insurance']+$rVal['peni']+$rVal['electric']+$rVal['gas']+$rVal['entry_phone'];
-      $rVal['sumCommis'] = (($rVal['summ']+$noBalans)*$rVal['commis'])/100;
+      $rVal['sumCommis'] = round((($rVal['summ']+$noBalans)*$rVal['commis'])/100, 2);
+      $rVal['include_commission'] = $rVal['include_commis'];unset($rVal['include_commis']);
       foreach($rVal as $key=>$val){
         if($key == 'id'){
           $keysArr[] = $val;
@@ -922,7 +1148,13 @@ function payonline_hcs_export_by_date_form_submit($form, &$form_state){
     ->fields(array('date_export_payment' => date('Y-m-d H:i:s')))
     ->condition('id', $keysArr, 'IN')
     ->execute();
-    watchdog('payonline-hcs-info', 'Export payments by date range '.$dFrom.'-'.$dTo.' completed. Payonline HCS was <strong>'.$user->name.'</strong> at '.date('d.m.Y h:m:s'));
+    
+    if($type == 1){
+      watchdog('payonline-hcs-info', 'Export payments by date range '.$dFrom.'-'.$dTo.' completed. Payonline HCS was <strong>'.$user->name.'</strong> at '.date('d.m.Y h:m:s'));
+    }
+    else{
+      watchdog('payonline-hcs-info', 'Export payments with manual selection of the payment is completed. Payonline HCS was <strong>'.$user->name.'</strong> at '.date('d.m.Y h:m:s'));
+    }
     fclose($fp);
     drupal_exit();
   }
@@ -1156,6 +1388,5 @@ function payonline_hcs_statistic_page(){
       'empty' => t('No data.'),
     )
   );
-  
   return $out;
 }

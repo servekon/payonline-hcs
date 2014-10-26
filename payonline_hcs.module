@@ -1,5 +1,5 @@
 <?php
-define('AP_PAYONLINE_PATH_MODULE', (string)base_path().drupal_get_path('module', 'payonline_hcs'));
+define('AP_PAYONLINE_PATH_MODULE', base_path().drupal_get_path('module', 'payonline_hcs'));
 /**
 * Valid permissions for this module
 * @return array An array of valid permissions for the onthisdate module
@@ -97,7 +97,6 @@ function payonline_hcs_menu() {
   $menu['admin/payonline_hcs/statistic'] = array(
     'title' => 'Statistics',
     'page callback' => 'payonline_hcs_statistic_page',
-    //~ 'page arguments' => array('alcom_konsalt_admin_oplata'),
     'access arguments' => array('administer_payonline_hcs'),
     'file' => 'payonline_hcs.admin.inc',
     'type' => MENU_LOCAL_TASK,
@@ -402,7 +401,6 @@ function payonline_hcs_payment_form_next_submit($form, &$form_state){
     else {
       $form_state['values'] = array();
     }
-    //~ $form_state['values']['pay_hcs_order_id'] = isset($form_state['values']['pay_hcs_order_id']) ? $form_state['values']['pay_hcs_order_id'] : _payonline_hcs_generate_order_id();
     $form_state['rebuild'] = TRUE;
     return;
   }
@@ -445,11 +443,9 @@ function payonline_hcs_step_one_payment_form($form, &$form_state){
   if(variable_get('payonline_hcs_home_insurance', 0) > 0){
     $insArr[1] = t('Home insurance').' (+<strong>'.variable_get('payonline_hcs_home_insurance', 0).'</strong>'.$rublPay.')';
   }
-  
   if(variable_get('payonline_hcs_liability_insurance', 0) > 0){
     $insArr[2] = t('Third party liability insurance').' (+<strong>'.variable_get('payonline_hcs_liability_insurance', 0).'</strong>'.$rublPay.')';
   }
-  
   if(variable_get('payonline_hcs_full_insurance', 0) > 0){
     $insArr[3] = t('Full insurance').' (+<strong>'.variable_get('payonline_hcs_full_insurance', 0).'</strong>'.$rublPay.')';
   }
@@ -549,8 +545,7 @@ function payonline_hcs_step_two_payment_form($form, &$form_state){
   
   $rublPay = _payonline_hcs_rubl_image();
   
-  $form = array();
-  $addr   = array();
+  $form = $secKeyArr = $addr = array();
   $prevStep = $form_state['step']-1;
   
   $form_state['values']   = array_merge($form_state['values'],$form_state['step_forms'][$prevStep]['stored_values']);
@@ -558,7 +553,6 @@ function payonline_hcs_step_two_payment_form($form, &$form_state){
   $fls   = $form_state['values']['pay_hcs_lc_fkey'];
   $flat  = $form_state['values']['pay_hcs_room_flats'];
   
-  $secKeyArr  = array();
   $strahArr  = array(
     '0' => 0,
     '1' => variable_get('payonline_hcs_home_insurance', 0),
@@ -592,8 +586,8 @@ function payonline_hcs_step_two_payment_form($form, &$form_state){
     drupal_set_message(t('Amount does not exceed %sum.', array('%sum'=>$maxSumPay)), 'warning', FALSE);
   }
   
-  $paySummProc   = 0;
-  $summWithProc   = $sum;
+  $paySummProc = 0;
+  $summWithProc = $amount = $sum;
     
   if(variable_get('payonline_hcs_offer_node_id', 0) == 0 or ((bool)variable_get('payonline_hcs_private_key', '') === false)){
     $form['pay_hcs_error']=array(
@@ -609,9 +603,15 @@ function payonline_hcs_step_two_payment_form($form, &$form_state){
     $proc = (float)variable_get('payonline_hcs_commission', 0)/100;
     $paySummProc = round($sum*$proc,2);
     $summWithProc = $sum+$paySummProc;
+    $amount = $summWithProc;
   }
+  
   $ordDesc    = t('Payment of charges HCS for personal account number %pan, sum %sum.', array('%pan'=>$fls, '%sum'=>number_format($sum, 2, ',', ' ')));
   
+  if((int)variable_get('payonline_hcs_include_commission') > 0){
+    $amount = $sum;
+    $ordDesc .= ' '.t('The Commission will be %commis.', array('%commis'=>number_format($paySummProc, 2, ',', ' ')));
+  }
   if($sum100 > 0){
     $form['pay_hcs_sum_detail']=array(
       '#markup' => t('Sum').': <strong>'.$sum100.'</strong>'.$rublPay.'. ',
@@ -640,13 +640,13 @@ function payonline_hcs_step_two_payment_form($form, &$form_state){
      * */
     'MerchantId' => variable_get('payonline_hcs_mid', ''),
     'OrderId' => $order_id,
-    'Amount' => number_format((float)$summWithProc, 2, '.', ''),
+    'Amount' => number_format((float)$amount, 2, '.', ''),
     'Currency' => 'RUB',
     /*
      * Optional parameters
      * */
     'OrderDescription' => strip_tags($ordDesc),// Max length - 100 symbols 
-    //~ 'ReturnUrl' => htmlspecialchars('http://alcom-konsalt.ru/payonline-hcs/view-payment'),
+    //~ 'ReturnUrl' => htmlspecialchars('http://site-name.tld/payonline-hcs/view-payment'),
   );
   
   foreach($arrForm as $key=>$val2){
@@ -666,6 +666,7 @@ function payonline_hcs_step_two_payment_form($form, &$form_state){
     'pay_hcs_uid' => $user->uid,
     'pay_hcs_lc_fkey' => $fls,
     'pay_hcs_commis' => variable_get('payonline_hcs_commission', 0),
+    'pay_hcs_include_commis' => (int)variable_get('payonline_hcs_include_commission'),
     'pay_hcs_peni' => $peni,
     'pay_hcs_home_insurance' => 0,
     'pay_hcs_liability_insurance' => 0,
@@ -733,7 +734,6 @@ function payonline_hcs_step_two_payment_form($form, &$form_state){
     $form['finish']['#value'] .= '*';
     $form['finish']['#suffix'] = '<br /><label for="payonline-hcs-submit-button">*'.t('Comission').'&nbsp;'.variable_get('payonline_hcs_commission', 0).'% - <strong>'.$paySummProc.'</strong>.</label>';
   }
-  
   return $form;
 }
 
@@ -749,7 +749,7 @@ function payonline_hcs_payment_form_submit($form, &$form_state){
   unset($form_state['values']['pay_hcs_user_strah']);
   unset($form_state['values']['pay_hcs_room_flats']);
   unset($form_state['values']['submit']);
-  //~ debug($form_state['values']); $form_state['rebuild']=true; return false;
+  
   drupal_goto(url(variable_get('payonline_hcs_form_payment_page', 'https://secure.payonlinesystem.com/ru/payment/select/')), array('query'=>$form_state['values']));
 }
 
@@ -844,7 +844,7 @@ function payonline_hcs_check_status_payment_form_submit($form, &$form_state){
  * Implementation of hook_help().
  */
 function payonline_hcs_help($path) {
-  switch ($path) {
+  switch($path){
   case 'admin/payonline_hcs/configure/import':
     return t('File formats for all handbooks must be unified. The first column should be a personal account number, the second field must be a number of apartment or electric PIN or gas\'s PIN.<br />Example: %example', array('%example'=>'"1234567";"7654321"'));
   break;
@@ -901,6 +901,24 @@ function _payonline_hcs_encodes(){
 }
 
 /*
+ * Array for the 'include_commis' variable.
+ * */
+function _payonline_hcs_txt_status_include_commission(){
+  return array(t('Yes'), t('No'));
+}
+
+/*
+ * Format number
+ * */
+function _payonline_hcs_number_format(&$var){
+  $var = number_format((float)$var, 2, '.', ',');
+}
+
+function _payonline_hcs_check_arr_empty_val($var){
+  return (!empty($var));
+}
+
+/*
  * Image with the symbol of russian rubl
  * */
 function _payonline_hcs_rubl_image(){
@@ -912,7 +930,7 @@ function _payonline_hcs_rubl_image(){
  * */
 function _payonline_hcs_generate_order_id($out=''){
   $ip = explode('.', $_SERVER['REMOTE_ADDR']);
-  $suff = ((int)$ip[0]+(int)end($ip))+(rand(155,775));
+  $suff = ((int)($ip[0])+(int)end($ip))+(rand(155,775));
   $uuid = preg_replace('/[a-z]|[A-Z]/', '', uniqid());
   $arrUuid = str_split($uuid);
 

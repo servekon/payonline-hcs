@@ -20,7 +20,7 @@ function payonline_hcs_uninstall() {
  * @return array of Schema API table definitions.
  */
 function payonline_hcs_schema() {
-  //Payments
+  //~ Payments
   $schema['payonline_hcs_payments'] = array(
     'fields' => array(
       'id' => array(
@@ -116,7 +116,14 @@ function payonline_hcs_schema() {
         'type' => 'float',
         'size' => 'normal',
         'not null' => TRUE, 
-        'description'=> "Sum of the Payment commission",
+        'description'=> "Commission of the payment",
+      ),
+      'include_commis' => array(
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
+        'description'=> "0 - include comission in the total amount of payment, 1 - not include",
       ),
       'home_insurance' => array(
         'type' => 'float',
@@ -205,7 +212,7 @@ function payonline_hcs_schema() {
     'primary key' => array('id')
   );
   
-  //Registry payments
+  //~ Registry payments
   $schema['payonline_hcs_payments_reestr'] = array(
     'fields' => array(
       'id' => array(
@@ -273,6 +280,13 @@ function payonline_hcs_schema() {
         'size' => 'normal',
         'not null' => TRUE, 
         'description'=> "Payment commission",
+      ),
+      'pr_include_commis' => array(
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
+        'description'=> "0 - include comission in the total amount of payment, 1 - not include",
       ),
       'pr_home_insurance' => array(
         'type' => 'float',
@@ -347,7 +361,7 @@ function payonline_hcs_schema() {
     'primary key' => array('id') 
   );
   
-  //Payments packs
+  //~ Payments packs
   $schema['payonline_hcs_payments_packs'] = array(
     'fields' => array(
       'pp_id' => array(
@@ -416,7 +430,7 @@ function payonline_hcs_schema() {
         'type' => 'varchar',
         'size' => 'normal',
         'not null' => TRUE,
-        'length' => 10,
+        'length' => 30,
         'description'=> "Flat number",
       ),
       'dateizm' => array(
@@ -513,7 +527,7 @@ function payonline_hcs_schema() {
  * Rename field 'id' to 'pp_id' in payonline_hcs_payments_packs table.
  */
 function payonline_hcs_update_7101(){
-  //Version 1.0.1
+  //~ Version 1.0.1
   if(!db_index_exists('payonline_hcs_payments', 'lcoc_key')){
     db_add_index('payonline_hcs_payments', 'lcoc_key', array('lcoc_key'));
   }
@@ -526,7 +540,7 @@ function payonline_hcs_update_7101(){
  * Change field name from lcoc_key to order_id
  */
 function payonline_hcs_update_7102(){
-  //Version 1.0.3
+  //~ Version 1.0.3
   $schema = payonline_hcs_schema();
   
   if(db_field_exists('payonline_hcs_payments', 'lcoc_key')){
@@ -574,4 +588,23 @@ function payonline_hcs_update_7102(){
   if(!db_field_exists('payonline_hcs_payments_reestr', 'pr_entry_phone')){
     db_query("ALTER TABLE {payonline_hcs_payments_reestr}  ADD `pr_entry_phone` FLOAT NOT NULL DEFAULT 0 COMMENT 'Sum for entry phone' AFTER `pr_gas_pin`");
   }
+}
+
+/**
+ * Add field 'include_commis' in the 'payonline_hcs_payments' table.
+ * Add field 'pr_include_commis' in the 'payonline_hcs_payments_reestr' table.
+ * Resize to 30 symbols for field 'pf_flat' in the 'payonline_hcs_pan_flats' table.
+ */
+function payonline_hcs_update_7103(){
+  //~ Version 1.0.7
+  //~ Alter payonline_hcs_payments
+  if(!db_field_exists('payonline_hcs_payments', 'include_commis')){
+    db_query("ALTER TABLE {payonline_hcs_payments}  ADD `include_commis` TINYINT NOT NULL DEFAULT 0 COMMENT '0 - include comission in the total amount of payment, 1 - not include' AFTER `commis`");
+  }
+  //~ Alter payonline_hcs_payments_reestr
+  if(!db_field_exists('payonline_hcs_payments_reestr', 'pr_include_commis')){
+    db_query("ALTER TABLE {payonline_hcs_payments_reestr}  ADD `pr_include_commis` TINYINT NOT NULL DEFAULT 0 COMMENT '0 - include comission in the total amount of payment, 1 - not include' AFTER `pr_commis`");
+  }
+  //~ Resize field
+  db_query("ALTER TABLE {payonline_hcs_pan_flats} CHANGE `pf_flat` `pf_flat` VARCHAR(30) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT 'Flat number'");
 }

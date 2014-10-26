@@ -12,7 +12,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
-"POT-Creation-Date: 2014-03-03 17:40+0400\n"
+"POT-Creation-Date: 2014-10-26 13:57+0300\n"
 "PO-Revision-Date: YYYY-mm-DD HH:MM+ZZZZ\n"
 "Last-Translator: NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <EMAIL@ADDRESS>\n"
@@ -21,555 +21,591 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 
-#: payonline_hcs.admin.inc:20
+#: payonline_hcs.admin.inc:22
 msgid "Basic settings"
 msgstr ""
 
-#: payonline_hcs.admin.inc:29
-msgid "Merchant ID exchange system Payonline"
-msgstr ""
-
-#: payonline_hcs.admin.inc:37
-msgid "Secret key exchange system Payonline"
-msgstr ""
-
-#: payonline_hcs.admin.inc:44
-msgid "The form of the method of payment"
-msgstr ""
-
-#: payonline_hcs.admin.inc:46
-msgid "Selection form of payment instrument"
-msgstr ""
-
-#: payonline_hcs.admin.inc:50
-msgid "Form of payment by credit card"
-msgstr ""
-
-#: payonline_hcs.admin.inc:57
-msgid "Pattern to form the of name packs payment"
-msgstr ""
-
-#: payonline_hcs.admin.inc:65 payonline_hcs.module:267
-msgid "Node ID with contract offer"
-msgstr ""
-
-#: payonline_hcs.admin.inc:71
-msgid "Commission fee charged to users"
-msgstr ""
-
-#: payonline_hcs.admin.inc:72
-msgid "If a user fee is not charged, the commission should be 0(zero)"
-msgstr ""
-
-#: payonline_hcs.admin.inc:78
+#: payonline_hcs.admin.inc:31
 msgid "Use an additional check on the room flats"
 msgstr ""
 
-#: payonline_hcs.admin.inc:85;289;653 payonline_hcs.module:492;500;650
+#: payonline_hcs.admin.inc:38
+msgid "Merchant ID exchange system Payonline"
+msgstr ""
+
+#: payonline_hcs.admin.inc:46
+msgid "Secret key exchange system Payonline"
+msgstr ""
+
+#: payonline_hcs.admin.inc:54
+msgid "Max sum of payment"
+msgstr ""
+
+#: payonline_hcs.admin.inc:61
+msgid "The form of the method of payment"
+msgstr ""
+
+#: payonline_hcs.admin.inc:63
+msgid "Selection form of payment instrument"
+msgstr ""
+
+#: payonline_hcs.admin.inc:67
+msgid "Form of payment by credit card"
+msgstr ""
+
+#: payonline_hcs.admin.inc:74
+msgid "Pattern to form the of name packs payment"
+msgstr ""
+
+#: payonline_hcs.admin.inc:82 payonline_hcs.module:233
+msgid "Node ID with contract offer"
+msgstr ""
+
+#: payonline_hcs.admin.inc:88;214
+msgid "Commission fee charged to users"
+msgstr ""
+
+#: payonline_hcs.admin.inc:89
+msgid "If a user fee is not charged, the commission should be 0(zero)"
+msgstr ""
+
+#: payonline_hcs.admin.inc:95
+msgid "Not include the commission in the total amount of payment"
+msgstr ""
+
+#: payonline_hcs.admin.inc:109;373;389;844 payonline_hcs.module:456;464;622
 msgid "Insurance"
 msgstr ""
 
-#: payonline_hcs.admin.inc:94 payonline_hcs.module:249;478
+#: payonline_hcs.admin.inc:118;217 payonline_hcs.module:215;444
 msgid "Home insurance"
 msgstr ""
 
-#: payonline_hcs.admin.inc:100 payonline_hcs.module:255;482
+#: payonline_hcs.admin.inc:124;220 payonline_hcs.module:221;447
 msgid "Third party liability insurance"
 msgstr ""
 
-#: payonline_hcs.admin.inc:106 payonline_hcs.module:261;486
+#: payonline_hcs.admin.inc:130;223 payonline_hcs.module:227;450
 msgid "Full insurance"
 msgstr ""
 
-#: payonline_hcs.admin.inc:112;290;654 payonline_hcs.module:551
+#: payonline_hcs.admin.inc:136;374;390;845 payonline_hcs.module:515
 msgid "Additional payments"
 msgstr ""
 
-#: payonline_hcs.admin.inc:121;385;709 payonline_hcs.module:522;656
+#: payonline_hcs.admin.inc:145;503;915 payonline_hcs.module:486;628
 msgid "Electric power"
 msgstr ""
 
-#: payonline_hcs.admin.inc:128;391;715 payonline_hcs.module:531;659
+#: payonline_hcs.admin.inc:152;509;921 payonline_hcs.module:495;631
 msgid "Gas"
 msgstr ""
 
-#: payonline_hcs.admin.inc:135;394;718 payonline_hcs.module:540;662
+#: payonline_hcs.admin.inc:159;512;924 payonline_hcs.module:504;634
 msgid "Entry phone"
 msgstr ""
 
-#: payonline_hcs.admin.inc:142
+#: payonline_hcs.admin.inc:166
 msgid "Export settings"
 msgstr ""
 
-#: payonline_hcs.admin.inc:151
+#: payonline_hcs.admin.inc:175
 msgid "Add in the first row the name of columns"
 msgstr ""
 
-#: payonline_hcs.admin.inc:158
+#: payonline_hcs.admin.inc:182
 msgid "Translate column names"
 msgstr ""
 
-#: payonline_hcs.admin.inc:173;983
+#: payonline_hcs.admin.inc:197;1227
 msgid "File encoding"
 msgstr ""
 
-#: payonline_hcs.admin.inc:187
+#: payonline_hcs.admin.inc:211
 msgid "Offer node ID must be greater than zero."
 msgstr ""
 
-#: payonline_hcs.admin.inc:217;225;252;428
+#: payonline_hcs.admin.inc:214;217;220;223
+msgid "Field %field can be only digits and dot."
+msgstr ""
+
+#: payonline_hcs.admin.inc:258;266;293;561
 msgid "Filter"
 msgstr ""
 
-#: payonline_hcs.admin.inc:227;283;649 payonline_hcs.module:450;741;791
+#: payonline_hcs.admin.inc:268;367;383;840 payonline_hcs.module:417;714;762
 msgid "Personal account number"
 msgstr ""
 
-#: payonline_hcs.admin.inc:228;650
+#: payonline_hcs.admin.inc:269;841
 msgid "Account number"
 msgstr ""
 
-#: payonline_hcs.admin.inc:229
+#: payonline_hcs.admin.inc:270
 msgid "Made by anonymous"
 msgstr ""
 
-#: payonline_hcs.admin.inc:237
+#: payonline_hcs.admin.inc:278
 msgid "Search"
 msgstr ""
 
-#: payonline_hcs.admin.inc:256;478 payonline_hcs.module:811
+#: payonline_hcs.admin.inc:297;638 payonline_hcs.module:782
 msgid "Cancel"
 msgstr ""
 
-#: payonline_hcs.admin.inc:279
-msgid "User"
+#: payonline_hcs.admin.inc:302
+msgid "Add selected payments in the new package of payment"
 msgstr ""
 
-#: payonline_hcs.admin.inc:284 payonline_hcs.module:798
-msgid "Order number"
-msgstr ""
-
-#: payonline_hcs.admin.inc:285;656
-msgid "Date adoption payment"
-msgstr ""
-
-#: payonline_hcs.admin.inc:286
-msgid "Payment tool"
-msgstr ""
-
-#: payonline_hcs.admin.inc:287
-msgid "Currency"
-msgstr ""
-
-#: payonline_hcs.admin.inc:288;293;652;661 payonline_hcs.module:468;645
-msgid "Sum"
-msgstr ""
-
-#: payonline_hcs.admin.inc:291;655 payonline_hcs.module:570;653
-msgid "Peni"
-msgstr ""
-
-#: payonline_hcs.admin.inc:292;293;659;661
-msgid "Commission"
-msgstr ""
-
-#: payonline_hcs.admin.inc:294;599;726
-msgid "Pack of payment number"
-msgstr ""
-
-#: payonline_hcs.admin.inc:349
-msgid "Anonymous"
-msgstr ""
-
-#: payonline_hcs.admin.inc:372;696
-msgid "Home insurance short"
-msgstr ""
-
-#: payonline_hcs.admin.inc:378;702
-msgid "Third party liability insurance short"
-msgstr ""
-
-#: payonline_hcs.admin.inc:381;705
-msgid "Full insurance short"
-msgstr ""
-
-#: payonline_hcs.admin.inc:418;542;632;728;771;874;1144
-msgid "No data."
-msgstr ""
-
-#: payonline_hcs.admin.inc:431;1010
-msgid "Reset"
-msgstr ""
-
-#: payonline_hcs.admin.inc:455;598
-msgid "Operating day"
-msgstr ""
-
-#: payonline_hcs.admin.inc:474
-msgid "Add pack of payment"
-msgstr ""
-
-#: payonline_hcs.admin.inc:514
-msgid "Pack of payment was added."
-msgstr ""
-
-#: payonline_hcs.admin.inc:557
-msgid "This will create a pack of payment for a total of %sum and for a count payments of %count."
-msgstr ""
-
-#: payonline_hcs.admin.inc:600
-msgid "Total payments packs payment"
-msgstr ""
-
-#: payonline_hcs.admin.inc:601
-msgid "Number of payments"
-msgstr ""
-
-#: payonline_hcs.admin.inc:602
-msgid "Actions"
-msgstr ""
-
-#: payonline_hcs.admin.inc:624
-msgid "List payments"
-msgstr ""
-
-#: payonline_hcs.admin.inc:625
-msgid "Export to CSV"
-msgstr ""
-
-#: payonline_hcs.admin.inc:657
-msgid "Date adoption payment in Payonline system"
-msgstr ""
-
-#: payonline_hcs.admin.inc:658
-msgid "Transaction number"
-msgstr ""
-
-#: payonline_hcs.admin.inc:660
-msgid "The amount of commission"
-msgstr ""
-
-#: payonline_hcs.admin.inc:833
-msgid "Start date"
-msgstr ""
-
-#: payonline_hcs.admin.inc:843
-msgid "End date"
-msgstr ""
-
-#: payonline_hcs.admin.inc:853
+#: payonline_hcs.admin.inc:307;1061
 msgid "Export"
 msgstr ""
 
-#: payonline_hcs.admin.inc:947
+#: payonline_hcs.admin.inc:316;615;786
+msgid "Operating day"
+msgstr ""
+
+#: payonline_hcs.admin.inc:317
+msgid "Payments already assigned to other package of payment will be ignored."
+msgstr ""
+
+#: payonline_hcs.admin.inc:331
+msgid "Add to the pack"
+msgstr ""
+
+#: payonline_hcs.admin.inc:368;384 payonline_hcs.module:769
+msgid "Order number"
+msgstr ""
+
+#: payonline_hcs.admin.inc:369;385;847
+msgid "Date adoption payment"
+msgstr ""
+
+#: payonline_hcs.admin.inc:370;386
+msgid "Payment tool"
+msgstr ""
+
+#: payonline_hcs.admin.inc:371;387
+msgid "Currency"
+msgstr ""
+
+#: payonline_hcs.admin.inc:372;377;388;393;843;852 payonline_hcs.module:435;617
+msgid "Sum"
+msgstr ""
+
+#: payonline_hcs.admin.inc:375;391;846 payonline_hcs.module:533;625
+msgid "Peni"
+msgstr ""
+
+#: payonline_hcs.admin.inc:376;377;392;393;850;852
+msgid "Commission"
+msgstr ""
+
+#: payonline_hcs.admin.inc:382
+msgid "User"
+msgstr ""
+
+#: payonline_hcs.admin.inc:394;787;935
+msgid "Pack of payment number"
+msgstr ""
+
+#: payonline_hcs.admin.inc:452
+msgid "Anonymous"
+msgstr ""
+
+#: payonline_hcs.admin.inc:453;877
+msgid "Was not included in the payment amount"
+msgstr ""
+
+#: payonline_hcs.admin.inc:490;902
+msgid "Home insurance short"
+msgstr ""
+
+#: payonline_hcs.admin.inc:496;908
+msgid "Third party liability insurance short"
+msgstr ""
+
+#: payonline_hcs.admin.inc:499;911
+msgid "Full insurance short"
+msgstr ""
+
+#: payonline_hcs.admin.inc:539;547;576;589;732;822;937;979;1107;1388
+msgid "No data."
+msgstr ""
+
+#: payonline_hcs.admin.inc:564;1254
+msgid "Reset"
+msgstr ""
+
+#: payonline_hcs.admin.inc:634
+msgid "Add pack of payment"
+msgstr ""
+
+#: payonline_hcs.admin.inc:694
+msgid "Pack of payment was added."
+msgstr ""
+
+#: payonline_hcs.admin.inc:747
+msgid "This will create a pack of payment for a total of %sum and for a count payments of %count."
+msgstr ""
+
+#: payonline_hcs.admin.inc:788
+msgid "Total payments packs payment"
+msgstr ""
+
+#: payonline_hcs.admin.inc:789
+msgid "Number of payments"
+msgstr ""
+
+#: payonline_hcs.admin.inc:790
+msgid "Actions"
+msgstr ""
+
+#: payonline_hcs.admin.inc:811
+msgid "List payments"
+msgstr ""
+
+#: payonline_hcs.admin.inc:812
+msgid "Export to CSV"
+msgstr ""
+
+#: payonline_hcs.admin.inc:848
+msgid "Date adoption payment in Payonline system"
+msgstr ""
+
+#: payonline_hcs.admin.inc:849
+msgid "Transaction number"
+msgstr ""
+
+#: payonline_hcs.admin.inc:851
+msgid "The amount of commission"
+msgstr ""
+
+#: payonline_hcs.admin.inc:1041
+msgid "Start date"
+msgstr ""
+
+#: payonline_hcs.admin.inc:1051
+msgid "End date"
+msgstr ""
+
+#: payonline_hcs.admin.inc:1191
 msgid "Handbook with numbers flats"
 msgstr ""
 
-#: payonline_hcs.admin.inc:947
+#: payonline_hcs.admin.inc:1191
 msgid "The file with the account number and the room flats"
 msgstr ""
 
-#: payonline_hcs.admin.inc:948
+#: payonline_hcs.admin.inc:1192
 msgid "This handbook required for additional verify of personal account number input."
 msgstr ""
 
-#: payonline_hcs.admin.inc:951
+#: payonline_hcs.admin.inc:1195
 msgid "Handbook with the electric personal identification numbers"
 msgstr ""
 
-#: payonline_hcs.admin.inc:951
+#: payonline_hcs.admin.inc:1195
 msgid "The file with the elrectric personal accounts numbers"
 msgstr ""
 
-#: payonline_hcs.admin.inc:952
+#: payonline_hcs.admin.inc:1196
 msgid "This handbook is required to enable users of the site could to pay for electricity."
 msgstr ""
 
-#: payonline_hcs.admin.inc:955
+#: payonline_hcs.admin.inc:1199
 msgid "Handbook with the gas personal identification numbers"
 msgstr ""
 
-#: payonline_hcs.admin.inc:955
+#: payonline_hcs.admin.inc:1199
 msgid "The file with the gas personal accounts numbers"
 msgstr ""
 
-#: payonline_hcs.admin.inc:956
+#: payonline_hcs.admin.inc:1200
 msgid "This handbook is required to enable users of the site could to pay for gas."
 msgstr ""
 
-#: payonline_hcs.admin.inc:979
+#: payonline_hcs.admin.inc:1223
 msgid "File size should not exceed <strong>%max_file_size</strong>(upload_max_filesize) or should not exceed <strong>%post_max_size</strong>(post_max_size)."
 msgstr ""
 
-#: payonline_hcs.admin.inc:996
+#: payonline_hcs.admin.inc:1240
 msgid "Module Alcom-Consult is on, so the data will be imported from the module."
 msgstr ""
 
-#: payonline_hcs.admin.inc:1003
+#: payonline_hcs.admin.inc:1247
 msgid "Fill handbook"
 msgstr ""
 
-#: payonline_hcs.admin.inc:1067
+#: payonline_hcs.admin.inc:1311
 msgid "Handbook was not filled. Uploaded file is empty."
 msgstr ""
 
-#: payonline_hcs.admin.inc:1072
+#: payonline_hcs.admin.inc:1316
 msgid "Filling the handbook successfully. Number of rows affected: %rows."
 msgstr ""
 
-#: payonline_hcs.admin.inc:1075
+#: payonline_hcs.admin.inc:1319
 msgid "Handbook was not filled."
 msgstr ""
 
-#: payonline_hcs.admin.inc:1123
+#: payonline_hcs.admin.inc:1367
 msgid "Count payments"
 msgstr ""
 
-#: payonline_hcs.admin.inc:1124
+#: payonline_hcs.admin.inc:1368
 msgid "Sum payments"
 msgstr ""
 
-#: payonline_hcs.admin.inc:1129
+#: payonline_hcs.admin.inc:1373
 msgid "Count payments made ​​by anonymous users"
 msgstr ""
 
-#: payonline_hcs.admin.inc:1130
+#: payonline_hcs.admin.inc:1374
 msgid "Sum payments made ​​by anonymous users"
 msgstr ""
 
-#: payonline_hcs.user.inc:78;77
+#: payonline_hcs.user.inc:79;78
 msgid "Payment false. Payment exists in the database."
 msgstr ""
 
-#: payonline_hcs.user.inc:110
+#: payonline_hcs.user.inc:113
 msgid "Payment processing is completed."
 msgstr ""
 
-#: payonline_hcs.user.inc:37;43;77
+#: payonline_hcs.user.inc:38;44;78
 msgid "payonline-hcs-error"
 msgstr ""
 
-#: payonline_hcs.user.inc:37
+#: payonline_hcs.user.inc:38
 msgid "Payment false. Secret key is empty."
 msgstr ""
 
-#: payonline_hcs.user.inc:43
+#: payonline_hcs.user.inc:44
 msgid "Payment false. LC_Fkey is empty."
 msgstr ""
 
-#: payonline_hcs.module:41
+#: payonline_hcs.module:10
 msgid "Anonym access payonline_hcs"
 msgstr ""
 
-#: payonline_hcs.module:45
+#: payonline_hcs.module:14
 msgid "View payment payonline_hcs"
 msgstr ""
 
-#: payonline_hcs.module:48
+#: payonline_hcs.module:17
 msgid "Can to make payment"
 msgstr ""
 
-#: payonline_hcs.module:49
+#: payonline_hcs.module:18
 msgid "Allow users get payment form"
 msgstr ""
 
-#: payonline_hcs.module:52
+#: payonline_hcs.module:21
 msgid "Administer payonline_hcs"
 msgstr ""
 
-#: payonline_hcs.module:214
+#: payonline_hcs.module:180
 msgid "Payment form HCS"
 msgstr ""
 
-#: payonline_hcs.module:220;296;199
+#: payonline_hcs.module:186;262;166
 msgid "Check payment status Payonline"
 msgstr ""
 
-#: payonline_hcs.module:292
+#: payonline_hcs.module:258
 msgid "HCS payment form"
 msgstr ""
 
-#: payonline_hcs.module:333
+#: payonline_hcs.module:301
 msgid "Prev"
 msgstr ""
 
-#: payonline_hcs.module:344
+#: payonline_hcs.module:312
 msgid "Next"
 msgstr ""
 
-#: payonline_hcs.module:376
+#: payonline_hcs.module:344
 msgid "Personal account number does not match with the number of flats."
 msgstr ""
 
-#: payonline_hcs.module:390
+#: payonline_hcs.module:358
 msgid "For this personal account number does not found the electric PIN. Payment for the electric power impossible."
 msgstr ""
 
-#: payonline_hcs.module:404
+#: payonline_hcs.module:372
 msgid "For this personal account number does not found the gas PIN."
 msgstr ""
 
-#: payonline_hcs.module:459
+#: payonline_hcs.module:426
 msgid "Room flats"
 msgstr ""
 
-#: payonline_hcs.module:474
+#: payonline_hcs.module:441;907
 msgid "No"
 msgstr ""
 
-#: payonline_hcs.module:488
+#: payonline_hcs.module:452
 msgid "Manually"
 msgstr ""
 
-#: payonline_hcs.module:504
+#: payonline_hcs.module:468
 msgid "If choose \"Manually\", then Insurance type will be \"Full\"."
 msgstr ""
 
-#: payonline_hcs.module:509
+#: payonline_hcs.module:473
 msgid "Insurance sum"
 msgstr ""
 
-#: payonline_hcs.module:620
-msgid "Amount does not exceed 30 000."
+#: payonline_hcs.module:586
+msgid "Amount does not exceed %sum."
 msgstr ""
 
-#: payonline_hcs.module:629
+#: payonline_hcs.module:595
 msgid "Making payments is impossible."
 msgstr ""
 
-#: payonline_hcs.module:630
+#: payonline_hcs.module:596
 msgid "Contact the site administrator."
 msgstr ""
 
-#: payonline_hcs.module:641
+#: payonline_hcs.module:609
 msgid "Payment of charges HCS for personal account number %pan, sum %sum."
 msgstr ""
 
-#: payonline_hcs.module:748
+#: payonline_hcs.module:613
+msgid "The Commission will be %commis."
+msgstr ""
+
+#: payonline_hcs.module:721
 msgid "I have read and agree with the terms of the public offer"
 msgstr ""
 
-#: payonline_hcs.module:756
+#: payonline_hcs.module:728
 msgid "Pay it"
 msgstr ""
 
-#: payonline_hcs.module:763
+#: payonline_hcs.module:735
 msgid "Comission"
 msgstr ""
 
-#: payonline_hcs.module:806
+#: payonline_hcs.module:777
 msgid "Check"
 msgstr ""
 
-#: payonline_hcs.module:836
+#: payonline_hcs.module:807
 msgid "Payment has not been confirmed."
 msgstr ""
 
-#: payonline_hcs.module:839
+#: payonline_hcs.module:810
 msgid "Payment was successful."
 msgstr ""
 
-#: payonline_hcs.module:843
+#: payonline_hcs.module:814
 msgid "Payment not found in database."
 msgstr ""
 
-#: payonline_hcs.module:865
+#: payonline_hcs.module:836
 msgid "Too many requests per unit of time."
 msgstr ""
 
-#: payonline_hcs.module:868
+#: payonline_hcs.module:839
 msgid "Error cookies."
 msgstr ""
 
-#: payonline_hcs.module:878
+#: payonline_hcs.module:849
 msgid "File formats for all handbooks must be unified. The first column should be a personal account number, the second field must be a number of apartment or electric PIN or gas's PIN.<br />Example: %example"
 msgstr ""
 
-#: payonline_hcs.module:65
+#: payonline_hcs.module:907
+msgid "Yes"
+msgstr ""
+
+#: payonline_hcs.module:33
 msgid "Payments from Payonline"
 msgstr ""
 
-#: payonline_hcs.module:73
+#: payonline_hcs.module:41
 msgid "List all payments"
 msgstr ""
 
-#: payonline_hcs.module:80
+#: payonline_hcs.module:48
 msgid "Packs of payment"
 msgstr ""
 
-#: payonline_hcs.module:81;91
+#: payonline_hcs.module:49;59
 msgid "View or add packs of payment"
 msgstr ""
 
-#: payonline_hcs.module:90
+#: payonline_hcs.module:58
 msgid "View payments by pack"
 msgstr ""
 
-#: payonline_hcs.module:99
+#: payonline_hcs.module:67
 msgid "Export packs of payment"
 msgstr ""
 
-#: payonline_hcs.module:100
+#: payonline_hcs.module:68
 msgid "Export pack of payment to CSV"
 msgstr ""
 
-#: payonline_hcs.module:108
+#: payonline_hcs.module:76
 msgid "Add the pack of payment"
 msgstr ""
 
-#: payonline_hcs.module:109
+#: payonline_hcs.module:77
 msgid "Form to addd pack of payment"
 msgstr ""
 
-#: payonline_hcs.module:119
+#: payonline_hcs.module:87
 msgid "Export payments for the period"
 msgstr ""
 
-#: payonline_hcs.module:120
+#: payonline_hcs.module:88
 msgid "Export payment by date range"
 msgstr ""
 
-#: payonline_hcs.module:130;140
+#: payonline_hcs.module:98;107
 msgid "Statistics"
 msgstr ""
 
-#: payonline_hcs.module:146
+#: payonline_hcs.module:113
 msgid "Configure Payonline"
 msgstr ""
 
-#: payonline_hcs.module:147
+#: payonline_hcs.module:114
 msgid "Configure the Payonline HCS module"
 msgstr ""
 
-#: payonline_hcs.module:157
+#: payonline_hcs.module:124
 msgid "Settings"
 msgstr ""
 
-#: payonline_hcs.module:164
+#: payonline_hcs.module:131
 msgid "Handbooks"
 msgstr ""
 
-#: payonline_hcs.module:174
+#: payonline_hcs.module:141
 msgid "Make payment Payonline"
 msgstr ""
 
-#: payonline_hcs.module:175
+#: payonline_hcs.module:142
 msgid "Make payment to Payonline."
 msgstr ""
 
-#: payonline_hcs.module:182
+#: payonline_hcs.module:149
 msgid "View payment from Payonline"
 msgstr ""
 
-#: payonline_hcs.module:190
+#: payonline_hcs.module:157
 msgid "Confirm Payment Payonline"
 msgstr ""
 
-#: payonline_hcs.module:191
+#: payonline_hcs.module:158
 msgid "Confirm Payment from Payonline."
 msgstr ""
 
-#: payonline_hcs.module:200
+#: payonline_hcs.module:167
 msgid "Form to check of payment status"
 msgstr ""
 

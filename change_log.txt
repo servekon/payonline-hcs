@@ -1,3 +1,12 @@
+Version 1.0.7
+-Added ability not include the commission in the total amount of payment. For this on settings page need set checkbox;
+-Add field 'include_commis' in the 'payonline_hcs_payments' table;
+-Add field 'pr_include_commis' in the 'payonline_hcs_payments_reestr' table;
+-Resize to 30 symbols for field 'pf_flat' in the 'payonline_hcs_pan_flats' table;
+-Update page with list all payments. Added ability the of manual selections for the export of payments(for admin),
+-Added ability the of manual selections for add payments to the payment packs(for admin);
+-Fixed a bugs on the page view payments by the user: the title was a column with the number of packs, there were references to the form with the filter;
+
 Version 1.0.5
 -Added ability to configure the maximum amount of payment;
 

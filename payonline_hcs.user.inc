@@ -11,8 +11,9 @@ function payonline_hcs_confirm_payment(){
   $lcoc         = (string)check_plain(payonline_hcs_isset_var($_GET['OrderId']));
   $trans        = (int)payonline_hcs_isset_var($_GET['TransactionID'],0);
   $payProv      = (string)check_plain(payonline_hcs_isset_var($_GET['Provider']));
-  $summ         = (string)check_plain(payonline_hcs_isset_var($_GET['Amount']));
+  $sum          = (string)check_plain(payonline_hcs_isset_var($_GET['Amount']));
   $commis       = (string)check_plain(payonline_hcs_isset_var($_GET['pay_hcs_commis']));
+  $isCommis     = (int)payonline_hcs_isset_var($_GET['pay_hcs_include_commis']);
   $homeIns      = (float)payonline_hcs_isset_var($_GET['pay_hcs_home_insurance']);
   $liabIns      = (float)payonline_hcs_isset_var($_GET['pay_hcs_liability_insurance']);
   $fullIns      = (float)payonline_hcs_isset_var($_GET['pay_hcs_full_insurance']);
@@ -24,13 +25,13 @@ function payonline_hcs_confirm_payment(){
   $elec_pin     = (string)payonline_hcs_isset_var($_GET['pay_hcs_electric_pin']);
   $gas_pin      = (string)payonline_hcs_isset_var($_GET['pay_hcs_gas_pin']);
   
-  $summWithoutProc = $summ;
+  $sumWithoutProc = $sum;
   $proc = 0;
   $commisSum = 0;
   
-  if($commis > 0){
+  if($commis > 0 and $isCommis == 0){
     $proc = (float)$commis+100;
-    $summWithoutProc = round(($summ*100)/$proc,2);
+    $sumWithoutProc = round(($sum*100)/$proc,2);
   }
   
   if((bool)variable_get('payonline_hcs_private_key', '') === false){
@@ -49,7 +50,7 @@ function payonline_hcs_confirm_payment(){
     'DateTime' => $dateTime,
     'TransactionID' => $trans,
     'OrderId' => $lcoc,
-    'Amount' => $summ,
+    'Amount' => $sum,
     'Currency' => $currency,
     'PrivateSecurityKey' => variable_get('payonline_hcs_private_key', ''),
   );
@@ -79,7 +80,7 @@ function payonline_hcs_confirm_payment(){
         drupal_exit();
       }
       
-      $summWithoutProc = $summWithoutProc-$homeIns-$liabIns-$fullIns-$peni-$electric-$gas-$entry_phone;
+      $sumWithoutProc = $sumWithoutProc-$homeIns-$liabIns-$fullIns-$peni-$electric-$gas-$entry_phone;
       
       $nid = db_insert('payonline_hcs_payments')
       ->fields(array(
@@ -89,8 +90,9 @@ function payonline_hcs_confirm_payment(){
           'currency' => $currency,
           'provider' => $payProv,
           'transaction' => $trans,
-          'summ' => (float)$summWithoutProc,
+          'summ' => (float)$sumWithoutProc,
           'commis' => (float)$commis,
+          'include_commis' => $isCommis,
           'home_insurance' => $homeIns,
           'liability_insurance' => $liabIns,
           'full_insurance' => $fullIns,
@@ -107,7 +109,7 @@ function payonline_hcs_confirm_payment(){
           )
         )
       ->execute();
-      watchdog('payonline-hcs-info', 'Payment successful. Account number for payment: '.$lcoc.'; Provider: '.$payProv.'; Summ: '. $summ.'.');
+      watchdog('payonline-hcs-info', 'Payment successful. Account number for payment: '.$lcoc.'; Provider: '.$payProv.'; Summ: '. $sum.'.');
       drupal_deliver_page(t('Payment processing is completed.'));
       drupal_exit();
     }
@@ -118,7 +120,7 @@ function payonline_hcs_confirm_payment(){
     }
   }
   else{
-    watchdog('payonline-hcs-error', 'Payment false. Empty Data. Account number for payment: '.$lcoc.'; Number account number: '.$lcFkey.'; Summ: '. $summ.'.');
+    watchdog('payonline-hcs-error', 'Payment false. Empty Data. Account number for payment: '.$lcoc.'; Number account number: '.$lcFkey.'; Summ: '. $sum.'.');
     drupal_access_denied();
     drupal_exit();
   }

@@ -3,19 +3,19 @@
 # Russian translation of Drupal (general)
 # Copyright servekon
 # Generated from files:
-#  payonline_hcs.admin.inc: 1.0.2
-#  payonline_hcs.module: 1.0.2
-#  payonline_hcs.user.inc: 1.0.2
-#  payonline_hcs.info: 1.0.2
+#  payonline_hcs.admin.inc: 1.0.7
+#  payonline_hcs.module: 1.0.7
+#  payonline_hcs.user.inc: 1.0.7
+#  payonline_hcs.info: 1.0.7
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: PROJECT VERSION\n"
-"POT-Creation-Date: 2014-01-26 20:57+0400\n"
-"PO-Revision-Date: 2014-02-01 17:57+0400\n"
-"Last-Translator: Konstantin\n"
-"Language-Team: Russian\n"
+"Project-Id-Version: 1.0.7\n"
+"POT-Creation-Date: 2014-10-26 13:52+0300\n"
+"PO-Revision-Date: 2014-10-26 13:52+0300\n"
+"Last-Translator: Konstantin Lukas <servekon@yahoo.com>\n"
+"Language-Team: Russian <servekon@yahoo.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -26,321 +26,353 @@ msgid "Basic settings"
 msgstr "Основные настройки"
 
 #: payonline_hcs.admin.inc:31
+msgid "Use an additional check on the room flats"
+msgstr ""
+"Использовать дополнительную проверку "
+"по номеру квартиры"
+
+#: payonline_hcs.admin.inc:38
 msgid "Merchant ID exchange system Payonline"
 msgstr "Merchant ID в платежной системе PayOnline"
 
-#: payonline_hcs.admin.inc:39
+#: payonline_hcs.admin.inc:46
 msgid "Secret key exchange system Payonline"
 msgstr ""
 "Секретный ключ для обмена с системой "
 "Payonline"
 
-#: payonline_hcs.admin.inc:47
+#: payonline_hcs.admin.inc:54
 msgid "Max sum of payment"
 msgstr "Максимальная возможная сумма платежа"
 
-#: payonline_hcs.admin.inc:55
+#: payonline_hcs.admin.inc:61
 msgid "The form of the method of payment"
 msgstr "Форма метода платежа"
 
-#: payonline_hcs.admin.inc:57
+#: payonline_hcs.admin.inc:63
 msgid "Selection form of payment instrument"
 msgstr "Форма выбора платежного инструмента"
 
-#: payonline_hcs.admin.inc:61
+#: payonline_hcs.admin.inc:67
 msgid "Form of payment by credit card"
 msgstr "Форма оплаты кредитной картой"
 
-#: payonline_hcs.admin.inc:68
+#: payonline_hcs.admin.inc:74
 msgid "Pattern to form the of name packs payment"
 msgstr ""
 "Шаблон для формирования имени пачки "
 "оплаты"
 
-#: payonline_hcs.admin.inc:76 payonline_hcs.module:234
+#: payonline_hcs.admin.inc:82 payonline_hcs.module:233
 msgid "Node ID with contract offer"
 msgstr ""
 "ID материала(страницы/статьи) с "
 "договором оферты"
 
-#: payonline_hcs.admin.inc:82
+#: payonline_hcs.admin.inc:88;214
 msgid "Commission fee charged to users"
 msgstr "Комиссия взимаемая с пользователей"
 
-#: payonline_hcs.admin.inc:83
+#: payonline_hcs.admin.inc:89
 msgid "If a user fee is not charged, the commission should be 0(zero)"
 msgstr ""
 "Если с пользователей комиссия не "
 "взимается, комиссия должна быть равна "
 "0(ноль)"
 
-#: payonline_hcs.admin.inc:89
-msgid "Use an additional check on the room flats"
+#: payonline_hcs.admin.inc:95
+msgid "Not include the commission in the total amount of payment"
 msgstr ""
-"Использовать дополнительную проверку "
-"по номеру квартиры"
+"Не включать сумму комиссии в итоговую "
+"сумму платежа"
 
-#: payonline_hcs.admin.inc:96;299;664 payonline_hcs.module:460;468;620
+#: payonline_hcs.admin.inc:109;373;389;844 payonline_hcs.module:456;464;622
 msgid "Insurance"
 msgstr "Страховка"
 
-#: payonline_hcs.admin.inc:105 payonline_hcs.module:216;446
+#: payonline_hcs.admin.inc:118;217 payonline_hcs.module:215;444
 msgid "Home insurance"
 msgstr "Страхование жилья"
 
-#: payonline_hcs.admin.inc:111 payonline_hcs.module:222;450
+#: payonline_hcs.admin.inc:124;220 payonline_hcs.module:221;447
 msgid "Third party liability insurance"
 msgstr "Страх. гражданской ответственности"
 
-#: payonline_hcs.admin.inc:117 payonline_hcs.module:228;454
+#: payonline_hcs.admin.inc:130;223 payonline_hcs.module:227;450
 msgid "Full insurance"
 msgstr "Полное страхование"
 
-#: payonline_hcs.admin.inc:123;300;665 payonline_hcs.module:519
+#: payonline_hcs.admin.inc:136;374;390;845 payonline_hcs.module:515
 msgid "Additional payments"
 msgstr "Дополнительные платежи"
 
-#: payonline_hcs.admin.inc:132;395;720 payonline_hcs.module:490;626
+#: payonline_hcs.admin.inc:145;503;915 payonline_hcs.module:486;628
 msgid "Electric power"
 msgstr "Электричество"
 
-#: payonline_hcs.admin.inc:139;401;726 payonline_hcs.module:499;629
+#: payonline_hcs.admin.inc:152;509;921 payonline_hcs.module:495;631
 msgid "Gas"
 msgstr "Газ"
 
-#: payonline_hcs.admin.inc:146;404;729 payonline_hcs.module:508;632
+#: payonline_hcs.admin.inc:159;512;924 payonline_hcs.module:504;634
 msgid "Entry phone"
 msgstr "Домофон"
 
-#: payonline_hcs.admin.inc:153
+#: payonline_hcs.admin.inc:166
 msgid "Export settings"
 msgstr "Настройки экспорта"
 
-#: payonline_hcs.admin.inc:162
+#: payonline_hcs.admin.inc:175
 msgid "Add in the first row the name of columns"
 msgstr ""
 "Добавлять в первую строку файла "
 "названия столбцов"
 
-#: payonline_hcs.admin.inc:169
+#: payonline_hcs.admin.inc:182
 msgid "Translate column names"
 msgstr "Переводить названия столбцов"
 
-#: payonline_hcs.admin.inc:184;995
+#: payonline_hcs.admin.inc:197;1227
 msgid "File encoding"
 msgstr "Кодировка файла"
 
-#: payonline_hcs.admin.inc:198
+#: payonline_hcs.admin.inc:211
 msgid "Offer node ID must be greater than zero."
 msgstr ""
 "ID материала(страницы/статьи) с "
 "договором оферты должен быть больше "
 "нуля."
 
-#: payonline_hcs.admin.inc:227;235;262;438
+#: payonline_hcs.admin.inc:214;217;220;223
+msgid "Field %field can be only digits and dot."
+msgstr ""
+"Поле %field может содержать только цифры "
+"и знак точки."
+
+#: payonline_hcs.admin.inc:258;266;293;561
 msgid "Filter"
 msgstr "Фильтр"
 
-#: payonline_hcs.admin.inc:237;293;660 payonline_hcs.module:419;711;760
+#: payonline_hcs.admin.inc:268;367;383;840 payonline_hcs.module:417;714;762
 msgid "Personal account number"
 msgstr "Номер ЛС"
 
-#: payonline_hcs.admin.inc:238;661
+#: payonline_hcs.admin.inc:269;841
 msgid "Account number"
 msgstr "Номер счета (квитанции)"
 
-#: payonline_hcs.admin.inc:239
+#: payonline_hcs.admin.inc:270
 msgid "Made by anonymous"
 msgstr ""
 "Платеж совершен анонимным "
 "пользователем"
 
-#: payonline_hcs.admin.inc:247
+#: payonline_hcs.admin.inc:278
 msgid "Search"
 msgstr "Поиск"
 
-#: payonline_hcs.admin.inc:266;487 payonline_hcs.module:780
+#: payonline_hcs.admin.inc:297;638 payonline_hcs.module:782
 msgid "Cancel"
 msgstr "Отменить"
 
-#: payonline_hcs.admin.inc:289
-msgid "User"
-msgstr "Пользователь"
+#: payonline_hcs.admin.inc:302
+msgid "Add selected payments in the new package of payment"
+msgstr ""
+"Добавить выбранные платежи в новую "
+"пачку оплаты"
 
-#: payonline_hcs.admin.inc:294 payonline_hcs.module:767
-msgid "Order number"
-msgstr "Номер заказа"
+#: payonline_hcs.admin.inc:307;1061
+msgid "Export"
+msgstr "Экспорт"
 
-#: payonline_hcs.admin.inc:295;667
-msgid "Date adoption payment"
-msgstr "Дата платежа"
-
-#: payonline_hcs.admin.inc:296
-msgid "Payment tool"
-msgstr "Платежный инструмент"
-
-#: payonline_hcs.admin.inc:297
-msgid "Currency"
-msgstr "Валюта"
-
-#: payonline_hcs.admin.inc:298;303;663;672 payonline_hcs.module:437;615
-msgid "Sum"
-msgstr "Сумма"
-
-#: payonline_hcs.admin.inc:301;666 payonline_hcs.module:537;623
-msgid "Peni"
-msgstr "Пени"
-
-#: payonline_hcs.admin.inc:302;303;670;672
-msgid "Commission"
-msgstr "Комиссия"
-
-#: payonline_hcs.admin.inc:304;610;737
-msgid "Pack of payment number"
-msgstr "Номер пачки оплаты"
-
-#: payonline_hcs.admin.inc:359
-msgid "Anonymous"
-msgstr "Гость"
-
-#: payonline_hcs.admin.inc:382;707
-msgid "Home insurance short"
-msgstr "Страх. жилья"
-
-#: payonline_hcs.admin.inc:388;713
-msgid "Third party liability insurance short"
-msgstr "Страх. Г.О."
-
-#: payonline_hcs.admin.inc:391;716
-msgid "Full insurance short"
-msgstr "Полное страх."
-
-#: payonline_hcs.admin.inc:428;553;643;739;782;885;1156
-msgid "No data."
-msgstr "Данных нет."
-
-#: payonline_hcs.admin.inc:441;1022
-msgid "Reset"
-msgstr "Сбросить"
-
-#: payonline_hcs.admin.inc:464;609
+#: payonline_hcs.admin.inc:316;615;786
 msgid "Operating day"
 msgstr "Опер. день"
 
-#: payonline_hcs.admin.inc:483
+#: payonline_hcs.admin.inc:317
+msgid "Payments already assigned to other package of payment will be ignored."
+msgstr ""
+"Платежи уже закрепленные за другими "
+"пачками оплаты игнорируются."
+
+#: payonline_hcs.admin.inc:331
+msgid "Add to the pack"
+msgstr "Добавить в пачку оплаты"
+
+#: payonline_hcs.admin.inc:368;384 payonline_hcs.module:769
+msgid "Order number"
+msgstr "Номер заказа"
+
+#: payonline_hcs.admin.inc:369;385;847
+msgid "Date adoption payment"
+msgstr "Дата платежа"
+
+#: payonline_hcs.admin.inc:370;386
+msgid "Payment tool"
+msgstr "Платежный инструмент"
+
+#: payonline_hcs.admin.inc:371;387
+msgid "Currency"
+msgstr "Валюта"
+
+#: payonline_hcs.admin.inc:372;377;388;393;843;852 payonline_hcs.module:435;617
+msgid "Sum"
+msgstr "Сумма"
+
+#: payonline_hcs.admin.inc:375;391;846 payonline_hcs.module:533;625
+msgid "Peni"
+msgstr "Пени"
+
+#: payonline_hcs.admin.inc:376;377;392;393;850;852
+msgid "Commission"
+msgstr "Комиссия"
+
+#: payonline_hcs.admin.inc:382
+msgid "User"
+msgstr "Пользователь"
+
+#: payonline_hcs.admin.inc:394;787;935
+msgid "Pack of payment number"
+msgstr "Номер пачки оплаты"
+
+#: payonline_hcs.admin.inc:452
+msgid "Anonymous"
+msgstr "Гость"
+
+#: payonline_hcs.admin.inc:453;877
+msgid "Was not included in the payment amount"
+msgstr "Комиссия не была включена в сумму платежа"
+
+#: payonline_hcs.admin.inc:490;902
+msgid "Home insurance short"
+msgstr "Страх. жилья"
+
+#: payonline_hcs.admin.inc:496;908
+msgid "Third party liability insurance short"
+msgstr "Страх. Г.О."
+
+#: payonline_hcs.admin.inc:499;911
+msgid "Full insurance short"
+msgstr "Полное страх."
+
+#: payonline_hcs.admin.inc:539;547;576;589;732;822;937;979;1107;1388
+msgid "No data."
+msgstr "Данных нет."
+
+#: payonline_hcs.admin.inc:564;1254
+msgid "Reset"
+msgstr "Сбросить"
+
+#: payonline_hcs.admin.inc:634
 msgid "Add pack of payment"
 msgstr "Добавить пачку оплаты"
 
-#: payonline_hcs.admin.inc:525
+#: payonline_hcs.admin.inc:694
 msgid "Pack of payment was added."
 msgstr "Пачка оплаты добавлена."
 
-#: payonline_hcs.admin.inc:568
+#: payonline_hcs.admin.inc:747
 msgid "This will create a pack of payment for a total of %sum and for a count payments of %count."
 msgstr ""
 "Будет создана пачка оплаты на сумму %sum "
 "с количеством платежей равным %count."
 
-#: payonline_hcs.admin.inc:611
+#: payonline_hcs.admin.inc:788
 msgid "Total payments packs payment"
 msgstr "Общая сумма платежей пачки оплаты"
 
-#: payonline_hcs.admin.inc:612
+#: payonline_hcs.admin.inc:789
 msgid "Number of payments"
 msgstr "Количество платежей"
 
-#: payonline_hcs.admin.inc:613
+#: payonline_hcs.admin.inc:790
 msgid "Actions"
 msgstr "Действия"
 
-#: payonline_hcs.admin.inc:635
+#: payonline_hcs.admin.inc:811
 msgid "List payments"
 msgstr "Список платежей"
 
-#: payonline_hcs.admin.inc:636
+#: payonline_hcs.admin.inc:812
 msgid "Export to CSV"
 msgstr "Экспорт в CSV"
 
-#: payonline_hcs.admin.inc:668
+#: payonline_hcs.admin.inc:848
 msgid "Date adoption payment in Payonline system"
 msgstr "Дата принятия платежа в системе Payonline"
 
-#: payonline_hcs.admin.inc:669
+#: payonline_hcs.admin.inc:849
 msgid "Transaction number"
 msgstr "Номер транзакции"
 
-#: payonline_hcs.admin.inc:671
+#: payonline_hcs.admin.inc:851
 msgid "The amount of commission"
 msgstr "Сумма комиссии"
 
-#: payonline_hcs.admin.inc:843
+#: payonline_hcs.admin.inc:1041
 msgid "Start date"
 msgstr "Дата начала периода"
 
-#: payonline_hcs.admin.inc:853
+#: payonline_hcs.admin.inc:1051
 msgid "End date"
 msgstr "Дата конца периода"
 
-#: payonline_hcs.admin.inc:863
-msgid "Export"
-msgstr "Экспорт"
-
-#: payonline_hcs.admin.inc:959
+#: payonline_hcs.admin.inc:1191
 msgid "Handbook with numbers flats"
 msgstr "Справочник с номерами квартир"
 
-#: payonline_hcs.admin.inc:959
+#: payonline_hcs.admin.inc:1191
 msgid "The file with the account number and the room flats"
 msgstr ""
 "Файл с номерами лицевых счетов и "
 "номерами квартир"
 
-#: payonline_hcs.admin.inc:960
+#: payonline_hcs.admin.inc:1192
 msgid "This handbook required for additional verify of personal account number input."
 msgstr ""
 "Этот справочник нужен для "
 "дополнительной проверки правильности "
 "ввода номера лицевого счета."
 
-#: payonline_hcs.admin.inc:963
+#: payonline_hcs.admin.inc:1195
 msgid "Handbook with the electric personal identification numbers"
 msgstr ""
 "Справочник с номерами лицевых счетов "
 "для элекроэнергии"
 
-#: payonline_hcs.admin.inc:963
+#: payonline_hcs.admin.inc:1195
 msgid "The file with the elrectric personal accounts numbers"
 msgstr ""
 "Файл с номерами лицевых счетов для "
 "элекроэнергии"
 
-#: payonline_hcs.admin.inc:964
+#: payonline_hcs.admin.inc:1196
 msgid "This handbook is required to enable users of the site could to pay for electricity."
 msgstr ""
 "Этот справочник нужен для того, чтобы "
 "пользователи могли оплачивать "
 "элекроэнергию."
 
-#: payonline_hcs.admin.inc:967
+#: payonline_hcs.admin.inc:1199
 msgid "Handbook with the gas personal identification numbers"
 msgstr ""
 "Справочник с номерами лицевых счетов "
 "для газа"
 
-#: payonline_hcs.admin.inc:967
+#: payonline_hcs.admin.inc:1199
 msgid "The file with the gas personal accounts numbers"
 msgstr ""
 "Файл с номерами лицевых счетов для "
 "газа"
 
-#: payonline_hcs.admin.inc:968
+#: payonline_hcs.admin.inc:1200
 msgid "This handbook is required to enable users of the site could to pay for gas."
 msgstr ""
 "Этот справочник нужен для того, чтобы "
 "пользователи могли оплачивать "
 "начисления за газ."
 
-#: payonline_hcs.admin.inc:991
+#: payonline_hcs.admin.inc:1223
 msgid "File size should not exceed <strong>%max_file_size</strong>(upload_max_filesize) or should not exceed <strong>%post_max_size</strong>(post_max_size)."
 msgstr ""
 "Размер файла не должен превышать "
@@ -348,75 +380,71 @@ msgstr ""
 "должен превышать "
 "<strong>%post_max_size</strong>(post_max_size)."
 
-#: payonline_hcs.admin.inc:1008
+#: payonline_hcs.admin.inc:1240
 msgid "Module Alcom-Consult is on, so the data will be imported from the module."
 msgstr ""
 "Модуль Алком-Консалт включен, поэтому "
 "данные будут импортироваться из этого "
 "модуля."
 
-#: payonline_hcs.admin.inc:1015
+#: payonline_hcs.admin.inc:1247
 msgid "Fill handbook"
 msgstr "Заполнить справочник"
 
-#: payonline_hcs.admin.inc:1079
+#: payonline_hcs.admin.inc:1311
 msgid "Handbook was not filled. Uploaded file is empty."
 msgstr ""
 "Справочник не заполнен. Загруженный "
 "файл оказался пустым."
 
-#: payonline_hcs.admin.inc:1084
+#: payonline_hcs.admin.inc:1316
 msgid "Filling the handbook successfully. Number of rows affected: %rows."
 msgstr ""
 "Заполнение справочника прошло "
 "успешно. Количество затронутых строк:  "
 "%rows."
 
-#: payonline_hcs.admin.inc:1087
+#: payonline_hcs.admin.inc:1319
 msgid "Handbook was not filled."
 msgstr "Справочник не был заполнен."
 
-#: payonline_hcs.admin.inc:1135
+#: payonline_hcs.admin.inc:1367
 msgid "Count payments"
 msgstr "Количество платежей"
 
-#: payonline_hcs.admin.inc:1136
+#: payonline_hcs.admin.inc:1368
 msgid "Sum payments"
 msgstr "Сумма платежей"
 
-#: payonline_hcs.admin.inc:1141
+#: payonline_hcs.admin.inc:1373
 msgid "Count payments made ​​by anonymous users"
 msgstr ""
 "Количество платежей, совершенных "
 "анонимными пользователями"
 
-#: payonline_hcs.admin.inc:1142
+#: payonline_hcs.admin.inc:1374
 msgid "Sum payments made ​​by anonymous users"
 msgstr ""
 "Сумма платежей, совершенных "
 "анонимными пользователями"
 
-#: payonline_hcs.user.inc:78;77
+#: payonline_hcs.user.inc:79;78
 msgid "Payment false. Payment exists in the database."
 msgstr ""
 "Платеж отклонен. Данный платеж уже "
 "существует в базе."
 
-#: payonline_hcs.user.inc:111
+#: payonline_hcs.user.inc:113
 msgid "Payment processing is completed."
 msgstr "Обработка платежа прошла успешно."
 
-#: payonline_hcs.user.inc:37;43;77
-msgid "payonline-hcs-error"
-msgstr ""
-
-#: payonline_hcs.user.inc:37
+#: payonline_hcs.user.inc:38
 msgid "Payment false. Secret key is empty."
 msgstr ""
 "Платеж отклонен. Не указан секретный "
 "ключ или значение ключа пусто."
 
-#: payonline_hcs.user.inc:43
+#: payonline_hcs.user.inc:44
 msgid "Payment false. LC_Fkey is empty."
 msgstr ""
 "Платеж отклонен. Не указан номер "
@@ -442,33 +470,33 @@ msgstr "Доступ к платежной форме"
 msgid "Administer payonline_hcs"
 msgstr "Администрирование модуля Payonline HCS"
 
-#: payonline_hcs.module:181
+#: payonline_hcs.module:180
 msgid "Payment form HCS"
 msgstr "Платежная форма"
 
-#: payonline_hcs.module:187;263;167
+#: payonline_hcs.module:186;262;166
 msgid "Check payment status Payonline"
 msgstr "Проверить статус платежа Payonline"
 
-#: payonline_hcs.module:259
+#: payonline_hcs.module:258
 msgid "HCS payment form"
 msgstr "Оплата через Payonline"
 
-#: payonline_hcs.module:302
+#: payonline_hcs.module:301
 msgid "Prev"
 msgstr "Назад"
 
-#: payonline_hcs.module:313
+#: payonline_hcs.module:312
 msgid "Next"
 msgstr "Далее"
 
-#: payonline_hcs.module:345
+#: payonline_hcs.module:344
 msgid "Personal account number does not match with the number of flats."
 msgstr ""
 "Номер лицевого счета не совпадает с "
 "номером квартиры."
 
-#: payonline_hcs.module:359
+#: payonline_hcs.module:358
 msgid "For this personal account number does not found the electric PIN. Payment for the electric power impossible."
 msgstr ""
 "Для указанного номера лицевого счета "
@@ -477,92 +505,98 @@ msgstr ""
 "элекроэнергии. Оплата элекроэнергии "
 "невозможна."
 
-#: payonline_hcs.module:373
+#: payonline_hcs.module:372
 msgid "For this personal account number does not found the gas PIN."
 msgstr ""
+"Для указанного номера лицевого счета "
+"не найден газовый идентификационный "
+"номер."
 
-#: payonline_hcs.module:428
+#: payonline_hcs.module:426
 msgid "Room flats"
 msgstr "Номер квартиры"
 
-#: payonline_hcs.module:443
+#: payonline_hcs.module:441;907
 msgid "No"
 msgstr "Нет"
 
-#: payonline_hcs.module:456
+#: payonline_hcs.module:452
 msgid "Manually"
 msgstr "Указать в ручную"
 
-#: payonline_hcs.module:472
+#: payonline_hcs.module:468
 msgid "If choose \"Manually\", then Insurance type will be \"Full\"."
 msgstr ""
 "Если выбрано \"Вручную, тип страховки "
 "будет \"Полное страхование\"\"."
 
-#: payonline_hcs.module:477
+#: payonline_hcs.module:473
 msgid "Insurance sum"
 msgstr "Сумма страховки"
 
-#: payonline_hcs.module:590
+#: payonline_hcs.module:586
 msgid "Amount does not exceed %sum."
-msgstr ""
-"Сумма платежа не должна превышать %sum."
+msgstr "Сумма платежа не должна превышать %sum."
 
-#: payonline_hcs.module:599
+#: payonline_hcs.module:595
 msgid "Making payments is impossible."
 msgstr "Совершение платежа невозможно."
 
-#: payonline_hcs.module:600
+#: payonline_hcs.module:596
 msgid "Contact the site administrator."
 msgstr "Обратитесь к администратору сайта."
 
-#: payonline_hcs.module:611
+#: payonline_hcs.module:609
 msgid "Payment of charges HCS for personal account number %pan, sum %sum."
 msgstr ""
 "Оплата начислений ЖКУ по ЛС %pan, сумма "
 "%sum."
 
-#: payonline_hcs.module:718
+#: payonline_hcs.module:613
+msgid "The Commission will be %commis."
+msgstr "Комиссия составит %commis."
+
+#: payonline_hcs.module:721
 msgid "I have read and agree with the terms of the public offer"
 msgstr ""
 "Я прочел и согласен с условиями "
 "договора публичной оферты"
 
-#: payonline_hcs.module:725
+#: payonline_hcs.module:728
 msgid "Pay it"
 msgstr "Оплатить"
 
-#: payonline_hcs.module:732
+#: payonline_hcs.module:735
 msgid "Comission"
 msgstr "Комиссия"
 
-#: payonline_hcs.module:775
+#: payonline_hcs.module:777
 msgid "Check"
 msgstr "Проверить"
 
-#: payonline_hcs.module:805
+#: payonline_hcs.module:807
 msgid "Payment has not been confirmed."
 msgstr "Платеж не подтвержден."
 
-#: payonline_hcs.module:808
+#: payonline_hcs.module:810
 msgid "Payment was successful."
 msgstr "Платеж был принят."
 
-#: payonline_hcs.module:812
+#: payonline_hcs.module:814
 msgid "Payment not found in database."
 msgstr "Платеж не найден в базе данных."
 
-#: payonline_hcs.module:834
+#: payonline_hcs.module:836
 msgid "Too many requests per unit of time."
 msgstr ""
 "Слишком много запросов в еденицу "
 "времени."
 
-#: payonline_hcs.module:837
+#: payonline_hcs.module:839
 msgid "Error cookies."
 msgstr "Ошибка cookies."
 
-#: payonline_hcs.module:847
+#: payonline_hcs.module:849
 msgid "File formats for all handbooks must be unified. The first column should be a personal account number, the second field must be a number of apartment or electric PIN or gas's PIN.<br />Example: %example"
 msgstr ""
 "Форат всех файлов должен быть "
@@ -573,6 +607,10 @@ msgstr ""
 "для элекроэнергии, или "
 "идентификационный номера для газа. <br "
 "/>Например: %example"
+
+#: payonline_hcs.module:907
+msgid "Yes"
+msgstr "Да"
 
 #: payonline_hcs.module:33
 msgid "Payments from Payonline"
@@ -618,51 +656,51 @@ msgstr "Экспорт платежей за период"
 msgid "Export payment by date range"
 msgstr "Экспорт платежей по датам"
 
-#: payonline_hcs.module:98;108
+#: payonline_hcs.module:98;107
 msgid "Statistics"
 msgstr "Статистика"
 
-#: payonline_hcs.module:114
+#: payonline_hcs.module:113
 msgid "Configure Payonline"
 msgstr "Настройки Payonline"
 
-#: payonline_hcs.module:115
+#: payonline_hcs.module:114
 msgid "Configure the Payonline HCS module"
 msgstr "Настройка модуля Payonline HCS"
 
-#: payonline_hcs.module:125
+#: payonline_hcs.module:124
 msgid "Settings"
 msgstr "Настройки"
 
-#: payonline_hcs.module:132
+#: payonline_hcs.module:131
 msgid "Handbooks"
 msgstr "Справочники"
 
-#: payonline_hcs.module:142
+#: payonline_hcs.module:141
 msgid "Make payment Payonline"
 msgstr "Оплата начислений ЖКХ"
 
-#: payonline_hcs.module:143
+#: payonline_hcs.module:142
 msgid "Make payment to Payonline."
 msgstr ""
 "Совершение платежа через систему "
 "Payonline"
 
-#: payonline_hcs.module:150
+#: payonline_hcs.module:149
 msgid "View payment from Payonline"
 msgstr "Просмотр платежей Payonline"
 
-#: payonline_hcs.module:158
+#: payonline_hcs.module:157
 msgid "Confirm Payment Payonline"
 msgstr ""
 "Подтверждения платежа от системы "
 "Payonline"
 
-#: payonline_hcs.module:159
+#: payonline_hcs.module:158
 msgid "Confirm Payment from Payonline."
 msgstr "Подтвердить платеж из системы Payonline."
 
-#: payonline_hcs.module:168
+#: payonline_hcs.module:167
 msgid "Form to check of payment status"
 msgstr "Форма проверки статуса платежа"
 
