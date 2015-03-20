@@ -311,10 +311,6 @@ msgstr "Номер транзакции"
 msgid "The amount of commission"
 msgstr "Сумма комиссии"
 
-#: payonline_hcs.admin.inc:948
-msgid "@item"
-msgstr "@item"
-
 #: payonline_hcs.admin.inc:1037
 msgid "Start date"
 msgstr "Дата начала периода"

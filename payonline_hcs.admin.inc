@@ -945,7 +945,8 @@ function _payonline_hcs_t_col(&$item, $key, $encode){
   $item =  preg_replace('/_/', ' ', $item);
   $item =  ucfirst($item);
   if(variable_get('payonline_hcs_export_translate_columns', 0) > 0){
-    $item = t('@item', array('@item'=>$item));
+    $item = check_plain($item);
+    $item = t($item);
   }
   if($fencode > 1){
     $item = mb_convert_encoding($item, $encode, "UTF-8");
