@@ -1,3 +1,6 @@
+Version 1.0.7.1
+-Fixed incorrect use watchdog() and t() functions;
+
 Version 1.0.7
 -Added ability not include the commission in the total amount of payment. For this on settings page need set checkbox;
 -Add field 'include_commis' in the 'payonline_hcs_payments' table;

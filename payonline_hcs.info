@@ -2,5 +2,5 @@ name = Payonline Housing and communal services
 description = Allows anonymous users to make payments for HMS using only the account number
 configure = admin/payonline_hcs/settings
 stylesheets[all][] = css/payonline_hcs.css
-version = "7.x-1.0.7"
+version = "7.x-1.0.7.1"
 core = "7.x"
