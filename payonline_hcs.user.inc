@@ -109,7 +109,7 @@ function payonline_hcs_confirm_payment(){
           )
         )
       ->execute();
-      watchdog('payonline-hcs-info', 'Payment successful. Account number for payment: '.$lcoc.'; Provider: '.$payProv.'; Summ: '. $sum.'.');
+      watchdog('payonline-hcs-info', 'Payment successful. Account number for payment: %lcoc; Provider: %payProv; Sum: %sum.', array('%lcoc' => $lcoc,'%payProv' => $payProv,'%sum' => $sum));
       drupal_deliver_page(t('Payment processing is completed.'));
       drupal_exit();
     }
@@ -120,7 +120,7 @@ function payonline_hcs_confirm_payment(){
     }
   }
   else{
-    watchdog('payonline-hcs-error', 'Payment false. Empty Data. Account number for payment: '.$lcoc.'; Number account number: '.$lcFkey.'; Summ: '. $sum.'.');
+    watchdog('payonline-hcs-error', 'Payment false. Empty Data. Account number for payment: %lcoc; Number account number: %lcFkey; Sum: %sum.', array('%lcoc' => $lcoc,'%lcFkey' => $lcFkey,'%sum' => $sum));
     drupal_access_denied();
     drupal_exit();
   }
