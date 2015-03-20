@@ -335,6 +335,10 @@ function payonline_hcs_viewpayment($form = array(), &$form_state){
         ),
       ),
     );
+    //~ $form['acronym'] = array(
+      //~ '#type' => 'item',
+      //~ '#title' => t('Was not included in the payment amount'),
+    //~ );
     $form['export_button_down'] = $form['export_button'];
     $form['add_to_pack_button_down']  = $form['add_to_pack_button'];
     $form['export_button_down']['#weight']  = 100;
@@ -690,7 +694,7 @@ function _payonline_hcs_add_pack_exec($operDay, $packCount, $packSum, $orders=ar
         drupal_set_message(t('Pack of payment was added.'));
         drupal_goto('admin/payonline_hcs/packs');
       }
-      watchdog('payonline-hcs-info', 'Fill of payments reestr for the pack #%pack completed.', array('%pack'=>$packNum));
+      watchdog('payonline-hcs-info', 'Fill of payments reestr for the pack #'.$packNum.' completed. Payonline HCS was <strong>'.$user->name.'</strong> at '.date('d.m.Y h:m:s'));
     }
     catch(Exception $e){
       watchdog_exception('payonline-hcs-error', $e);
@@ -746,7 +750,7 @@ function payonline_hcs_avaliable_payments_for_packs(&$countPay, &$sum, $orders=a
 }
 
 /**
- * Add new package of payment. Sum and count payments gets from func. "avaliable_payments_for_packs"
+ * Add new package of payment. Summ and count payments gets from func. "avaliable_payments_for_packs"
  * */
 function payonline_hcs_add_new_pack($operDay, $packNum, $packSum, $packCount){
   global $user;
@@ -758,7 +762,7 @@ function payonline_hcs_add_new_pack($operDay, $packNum, $packSum, $packCount){
       'pp_number_payments' => $packCount,
     ))
     ->execute();
-    watchdog('payonline-hcs-info', 'Created a new pack of payment #%packNum completed. Count payments: %packCount, pack sum: %packSum.', array('%packNum' => $packNum, '%packCount' => $packCount, '%packSum' => $packSum));
+    watchdog('info', 'Created a new pack of payment #'.$packNum.' completed. Count payments: '.$packCount.', pack summ: '.$packSum.'. Payonline HCS was <strong>'.$user->name.'</strong> at '.date('d.m.Y h:m:s'));
   }
   catch(Exception $e){
     watchdog_exception('payonline-hcs-error', $e);
@@ -945,7 +949,7 @@ function _payonline_hcs_t_col(&$item, $key, $encode){
   $item =  preg_replace('/_/', ' ', $item);
   $item =  ucfirst($item);
   if(variable_get('payonline_hcs_export_translate_columns', 0) > 0){
-    $item = t('@item', array('@item'=>$item));
+    $item = t($item);
   }
   if($fencode > 1){
     $item = mb_convert_encoding($item, $encode, "UTF-8");
@@ -1010,7 +1014,7 @@ function payonline_hcs_export_pack($packId = 0){
       unset($values,$key,$val);
     }
     unset($rKey,$rVal);
-    watchdog('payonline-hcs-info', 'Export pack #%filename completed.', array('%filename'=>$filename));
+    watchdog('payonline-hcs-info', 'Export pack #'.$filename.' completed. Payonline HCS was <strong>'.$user->name.'</strong> at '.date('d.m.Y h:m:s'));
     fclose($fp);
     drupal_exit();
   }
@@ -1146,10 +1150,10 @@ function _payonline_hcs_result_export($type, $opt=array()){
     ->execute();
     
     if($type == 1){
-      watchdog('payonline-hcs-info', 'Export payments by date range %dFrom-%dTo completed.', array('%dFrom' => $dFrom, '%dTo' => $dTo));
+      watchdog('payonline-hcs-info', 'Export payments by date range '.$dFrom.'-'.$dTo.' completed. Payonline HCS was <strong>'.$user->name.'</strong> at '.date('d.m.Y h:m:s'));
     }
     else{
-      watchdog('payonline-hcs-info', 'Export payments with manual selection of the payment is completed.');
+      watchdog('payonline-hcs-info', 'Export payments with manual selection of the payment is completed. Payonline HCS was <strong>'.$user->name.'</strong> at '.date('d.m.Y h:m:s'));
     }
     fclose($fp);
     drupal_exit();
