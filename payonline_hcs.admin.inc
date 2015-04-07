@@ -686,7 +686,7 @@ function _payonline_hcs_add_pack_exec($operDay, $packCount, $packSum, $orders=ar
       
       $ins = db_insert('payonline_hcs_payments_reestr')->fields($rFields)->from($qSel)->execute();
       if($ins){
-        $updRes = db_query("UPDATE {payonline_hcs_payments} as upd INNER JOIN {payonline_hcs_payments_reestr} as pay ON upd.order_id=pay.pr_order_id SET upd.date_added_payment_to_pack ='".date('Y-m-d H:i:s')."', upd.status_payment = ".$packId." WHERE pay.pack_id='".$packId."'");
+        $updRes = db_query("UPDATE {payonline_hcs_payments} as upd INNER JOIN {payonline_hcs_payments_reestr} as pay ON upd.order_id=pay.pr_order_id SET upd.date_added_payment_to_pack =:time, upd.status_payment = pay.pack_id WHERE pay.pack_id=:packId", array(':time'=>date('Y-m-d H:i:s'), ':packId'=>$packId));
         drupal_set_message(t('Pack of payment was added.'));
         drupal_goto('admin/payonline_hcs/packs');
       }
