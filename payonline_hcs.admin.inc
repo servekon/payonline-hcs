@@ -104,6 +104,21 @@ function payonline_hcs_admin() {
     ),
   );
   
+  $form['pay_hcs_main_fieldset']['payonline_hcs_commission_use_coef'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Use the step-up coefficient'),
+    '#description' => t('If checked then sum of pay will be calculated by formula: <strong>Sum/(1-(Commission/100))</strong> when forwarding for Payonline<br />and <strong>Sum*(1-(Commission/100))</strong> when will get response with sum from Payonline.'),
+    '#default_value' => variable_get('payonline_hcs_commission_use_coef', 0),
+    '#states' => array(
+      'invisible' => array(
+        ':input[name="payonline_hcs_commission"]' => array('value' => 0),
+      ),
+      'disabled' => array(
+        ':input[name="payonline_hcs_commission"]' => array('value' => 0),
+      ),
+    ),
+  );
+  
   $form['pay_hcs_strah_fieldset'] = array(
     '#type' => 'fieldset',
     '#title' => t('Insurance'),
@@ -233,6 +248,16 @@ function payonline_hcs_viewpayment($form = array(), &$form_state){
   if($user->uid == 0){
     drupal_access_denied();
     drupal_exit();
+  }
+  
+  if (arg(2) == 'complete') {
+    drupal_set_message('Обработка платежа прошла успешно.');
+    drupal_goto('payonline-hcs/view-payment');
+  }
+
+  if (arg(2) == 'cancel') {
+    drupal_set_message('Совершение платежа отменено пользователем или при совершении платежа произошла ошибка.', 'warning');
+    drupal_goto('payonline-hcs/view-payment');
   }
   
   $proc = 0;
@@ -421,6 +446,7 @@ function payonline_hcs_viewpayment($form = array(), &$form_state){
     }
     if($isAdmin){
       $query->fields('pack', array('pp_id','pp_pack_num'));
+      $query->fields('pays', array('commis_use_coef'));
     }
     
     if(!$collapsed){
@@ -447,10 +473,12 @@ function payonline_hcs_viewpayment($form = array(), &$form_state){
   $noBalans = 0;
   $gTxt = t('Anonymous');
   $notIncTxt = '<sup><acronym title="'.t('Was not included in the payment amount').'">[1]</acronym></sup>';
+  $usedCoef = '<sup><acronym title="'.t('Was used step-up coefficient').'">[2]</acronym></sup>';
+
   $arrUnset = array(
     'id', 'uid', 'pp_pack_num', 'summCommis', 'pp_id',
     'liability_insurance', 'full_insurance', 'electric_pin',
-    'gas', 'gas_pin', 'entry_phone', 'include_commis',
+    'gas', 'gas_pin', 'entry_phone', 'include_commis', 'commis_use_coef'
   );
   
   foreach($result as $key=>$val){
@@ -473,13 +501,22 @@ function payonline_hcs_viewpayment($form = array(), &$form_state){
     $val->summItog = $val->summCommis+$val->summ+$noBalans;
     
     if(!empty($val->commis)){
-      $val->commis .= '%,&nbsp;'.number_format((float)$val->summCommis, 2, '.', ',');
+      if($isAdmin && $val->commis_use_coef > 0){
+        $val->summItog  = (($val->summ+$noBalans)/(1-($val->commis/100)));
+        $val->summCommis  = ($val->summItog-($val->summ+$noBalans));
+      }
+      _payonline_hcs_number_format($val->summCommis);
+      $val->commis .= '%,&nbsp;'.$val->summCommis;
     }
+    
+    
     if($isAdmin and $val->include_commis == 1){
       $val->commis .= '&nbsp;'.$notIncTxt;
     }
+    if($isAdmin and $val->commis_use_coef == 1){
+      $val->commis .= '&nbsp;'.$usedCoef;
+    }
     _payonline_hcs_number_format($val->summ);
-    _payonline_hcs_number_format($val->summCommis);
     _payonline_hcs_number_format($val->summItog);
     
     if(!empty($val->home_insurance)){
@@ -665,13 +702,13 @@ function _payonline_hcs_add_pack_exec($operDay, $packCount, $packSum, $orders=ar
     try{
       $rFields = array(
         'pr_order_id', 'pr_lc_fkey', 'pr_merchant_id', 'pr_transaction', 'pr_date_adoption_payment', 
-        'pr_date_adoption_payment_in_payonline', 'pr_summ', 'pr_commis', 'pr_include_commis',
+        'pr_date_adoption_payment_in_payonline', 'pr_summ', 'pr_commis', 'pr_include_commis', 'pr_commis_use_coef',
         'pr_home_insurance', 'pr_liability_insurance', 'pr_full_insurance', 'pr_peni',
         'pr_electric', 'pr_gas', 'pr_electric_pin', 'pr_gas_pin', 'pr_entry_phone', 'pack_id',
       );
       $pFields = array(
         'order_id', 'lc_fkey', 'merchant_id', 'transaction', 'date_adoption_payment',
-        'date_adoption_payment_in_payonline', 'summ', 'commis', 'include_commis',
+        'date_adoption_payment_in_payonline', 'summ', 'commis', 'include_commis', 'commis_use_coef',
         'home_insurance', 'liability_insurance', 'full_insurance', 'peni',
         'electric', 'gas', 'electric_pin', 'gas_pin', 'entry_phone',
       );

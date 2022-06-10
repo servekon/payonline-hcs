@@ -5,6 +5,7 @@
 function payonline_hcs_confirm_payment(){
   $secKeyArr = array();
   
+  $errorCode    = (int)payonline_hcs_isset_var($_GET['ErrorCode']);
   $uid          = (int)payonline_hcs_isset_var($_GET['pay_hcs_uid']);
   $dateTime     = (string)check_plain(payonline_hcs_isset_var($_GET['DateTime']));
   $currency     = (string)check_plain(payonline_hcs_isset_var($_GET['Currency']));
@@ -14,6 +15,7 @@ function payonline_hcs_confirm_payment(){
   $sum          = (string)check_plain(payonline_hcs_isset_var($_GET['Amount']));
   $commis       = (string)check_plain(payonline_hcs_isset_var($_GET['pay_hcs_commis']));
   $isCommis     = (int)payonline_hcs_isset_var($_GET['pay_hcs_include_commis']);
+  $useCoef      = (int)payonline_hcs_isset_var($_GET['pay_hcs_commis_use_coef']);
   $homeIns      = (float)payonline_hcs_isset_var($_GET['pay_hcs_home_insurance']);
   $liabIns      = (float)payonline_hcs_isset_var($_GET['pay_hcs_liability_insurance']);
   $fullIns      = (float)payonline_hcs_isset_var($_GET['pay_hcs_full_insurance']);
@@ -27,11 +29,13 @@ function payonline_hcs_confirm_payment(){
   
   $sumWithoutProc = $sum;
   $proc = 0;
-  $commisSum = 0;
   
   if($commis > 0 and $isCommis == 0){
     $proc = (float)$commis+100;
     $sumWithoutProc = round(($sum*100)/$proc,2);
+    if($useCoef > 0){
+      $sumWithoutProc = round($sum*(1-($commis/100)), 2);
+    }
   }
   
   if((bool)variable_get('payonline_hcs_private_key', '') === false){
@@ -64,7 +68,11 @@ function payonline_hcs_confirm_payment(){
   
   $hashMd = md5(implode('&', $secKeyArr));
   
-  if(!empty($_GET) and payonline_hcs_isset_var($_GET['SecurityKey']) == $hashMd){
+  if($errorCode > 0) {
+    drupal_set_message(t('Making payments is impossible.'), 'warning');
+  }
+  
+  if($errorCode == 0 && payonline_hcs_isset_var($_GET['SecurityKey']) == $hashMd){
     try{
       $qCheck  = db_select('payonline_hcs_payments', 'pp')
       ->fields('pp', array('id'))
@@ -93,6 +101,7 @@ function payonline_hcs_confirm_payment(){
           'summ' => (float)$sumWithoutProc,
           'commis' => (float)$commis,
           'include_commis' => $isCommis,
+          'commis_use_coef' => $useCoef,
           'home_insurance' => $homeIns,
           'liability_insurance' => $liabIns,
           'full_insurance' => $fullIns,
@@ -121,7 +130,6 @@ function payonline_hcs_confirm_payment(){
   }
   else{
     watchdog('payonline-hcs-error', 'Payment false. Empty Data. Account number for payment: %lcoc; Number account number: %lcFkey; Sum: %sum.', array('%lcoc' => $lcoc,'%lcFkey' => $lcFkey,'%sum' => $sum));
-    drupal_access_denied();
-    drupal_exit();
+    drupal_goto('payonline-hcs/check-status');
   }
 }

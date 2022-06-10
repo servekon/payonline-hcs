@@ -562,14 +562,16 @@ function payonline_hcs_step_two_payment_form($form, &$form_state){
   );
   
   $order_id   = $form_state['values']['pay_hcs_order_id'];
-  $sum     = (float)$form_state['values']['pay_hcs_sum'];
-  $sum100   = $sum;
-  $peni     = (float)$form_state['values']['pay_hcs_peni'];
-  $electSum  = (float)payonline_hcs_isset_var($form_state['values']['pay_hcs_electric']);
-  $gasSum    = (float)payonline_hcs_isset_var($form_state['values']['pay_hcs_gas']);
+  $sum        = (float)$form_state['values']['pay_hcs_sum'];
+  $sum100     = $sum;
+  $peni       = (float)$form_state['values']['pay_hcs_peni'];
+  $electSum   = (float)payonline_hcs_isset_var($form_state['values']['pay_hcs_electric']);
+  $gasSum     = (float)payonline_hcs_isset_var($form_state['values']['pay_hcs_gas']);
   $enPhoneSum = (float)payonline_hcs_isset_var($form_state['values']['pay_hcs_entry_phone']);
   $strahSum   = (float)$strahArr[$form_state['values']['pay_hcs_strah']];
-  $maxSumPay = (float)variable_get('payonline_hcs_max_sum', 30000);
+  $maxSumPay  = (float)variable_get('payonline_hcs_max_sum', 15000);
+  $commis     = (float)variable_get('payonline_hcs_commission', 0);
+  $useCoef    = (int)variable_get('payonline_hcs_commission_use_coef', 0);
   $sum     += $strahSum;
   $sum     += $electSum;
   $sum     += $gasSum;
@@ -581,8 +583,11 @@ function payonline_hcs_step_two_payment_form($form, &$form_state){
   }
   
   if($sum > $maxSumPay){
-    $sum = round(($maxSumPay*100)/(100+variable_get('payonline_hcs_commission', 0)),2);
+    $sum = round(($maxSumPay*100)/(100+$commis),2);
     $sum100 = $maxSumPay;
+    if($useCoef > 0){
+      $sum = round($maxSumPay*(1-($commis/100)),2);
+    }
     drupal_set_message(t('Amount does not exceed %sum.', array('%sum'=>$maxSumPay)), 'warning', FALSE);
   }
   
@@ -599,10 +604,15 @@ function payonline_hcs_step_two_payment_form($form, &$form_state){
     return $form;
   }
   
-  if(variable_get('payonline_hcs_commission', 0) > 0){
-    $proc = (float)variable_get('payonline_hcs_commission', 0)/100;
+  if($commis > 0){
+    $proc = (float)$commis/100;
     $paySummProc = round($sum*$proc,2);
     $summWithProc = $sum+$paySummProc;
+    
+    if($useCoef > 0){
+      $summWithProc = round($sum/(1-$proc), 2);
+      $paySummProc = $summWithProc-$sum;
+    }
     $amount = $summWithProc;
   }
   
@@ -646,7 +656,8 @@ function payonline_hcs_step_two_payment_form($form, &$form_state){
      * Optional parameters
      * */
     'OrderDescription' => strip_tags($ordDesc),// Max length - 100 symbols 
-    //~ 'ReturnUrl' => htmlspecialchars('http://site-name.tld/payonline-hcs/view-payment'),
+    'ReturnUrl' => htmlspecialchars(url('payonline-hcs/view-payment/complete', ['absolute' => TRUE])),
+    'FailUrl' => htmlspecialchars(url('payonline-hcs/view-payment/cancel', ['absolute' => TRUE])),
   );
   
   foreach($arrForm as $key=>$val2){
@@ -665,8 +676,9 @@ function payonline_hcs_step_two_payment_form($form, &$form_state){
   $arrForm = array(
     'pay_hcs_uid' => $user->uid,
     'pay_hcs_lc_fkey' => $fls,
-    'pay_hcs_commis' => variable_get('payonline_hcs_commission', 0),
+    'pay_hcs_commis' => $commis,
     'pay_hcs_include_commis' => (int)variable_get('payonline_hcs_include_commission'),
+    'pay_hcs_commis_use_coef' => $useCoef,
     'pay_hcs_peni' => $peni,
     'pay_hcs_home_insurance' => 0,
     'pay_hcs_liability_insurance' => 0,
@@ -730,9 +742,9 @@ function payonline_hcs_step_two_payment_form($form, &$form_state){
       '#attributes'=> array('class'=>array('pay-button')),
       '#weight' => 30,
   );
-  if(variable_get('payonline_hcs_commission', 0) > 0){
+  if($commis > 0){
     $form['finish']['#value'] .= '*';
-    $form['finish']['#suffix'] = '<br /><label for="payonline-hcs-submit-button">*'.t('Comission').'&nbsp;'.variable_get('payonline_hcs_commission', 0).'% - <strong>'.$paySummProc.'</strong>.</label>';
+    $form['finish']['#suffix'] = '<br /><label for="payonline-hcs-submit-button">*'.t('Comission').'&nbsp;'.$commis.'% - <strong>'.$paySummProc.'</strong>.</label>';
   }
   return $form;
 }

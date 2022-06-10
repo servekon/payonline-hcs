@@ -125,6 +125,13 @@ function payonline_hcs_schema() {
         'default' => 0,
         'description'=> "0 - include comission in the total amount of payment, 1 - not include",
       ),
+      'commis_use_coef' => array(
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
+        'description'=> "0 - not use, 1 - use coefficient to calculate sum by formula: sum/(1-(commission/100))",
+      ),
       'home_insurance' => array(
         'type' => 'float',
         'size' => 'normal',
@@ -287,6 +294,13 @@ function payonline_hcs_schema() {
         'not null' => TRUE,
         'default' => 0,
         'description'=> "0 - include comission in the total amount of payment, 1 - not include",
+      ),
+      'pr_commis_use_coef' => array(
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
+        'description'=> "0 - not use, 1 - use coefficient to calculate sum by formula: sum/(1-(commission/100))",
       ),
       'pr_home_insurance' => array(
         'type' => 'float',
@@ -607,4 +621,20 @@ function payonline_hcs_update_7103(){
   }
   //~ Resize field
   db_query("ALTER TABLE {payonline_hcs_pan_flats} CHANGE `pf_flat` `pf_flat` VARCHAR(30) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT 'Flat number'");
+}
+
+/**
+ * Add field 'commis_use_coef' in the 'payonline_hcs_payments' table.
+ * Add field 'pr_commis_use_coef' in the 'payonline_hcs_payments_reestr' table.
+ */
+function payonline_hcs_update_7104(){
+  //~ Version 1.0.7.3
+  //~ Alter payonline_hcs_payments
+  if(!db_field_exists('payonline_hcs_payments', 'commis_use_coef')){
+    db_query("ALTER TABLE {payonline_hcs_payments}  ADD `commis_use_coef` TINYINT NOT NULL DEFAULT 0 COMMENT '0 - not use, 1 - use coefficient to calculate sum by formula: sum/(1-(commission/100))' AFTER `include_commis`");
+  }
+  //~ Alter payonline_hcs_payments_reestr
+  if(!db_field_exists('payonline_hcs_payments_reestr', 'pr_commis_use_coef')){
+    db_query("ALTER TABLE {payonline_hcs_payments_reestr}  ADD `pr_commis_use_coef` TINYINT NOT NULL DEFAULT 0 COMMENT '0 - not use, 1 - use coefficient to calculate sum by formula: sum/(1-(commission/100))' AFTER `pr_include_commis`");
+  }
 }
