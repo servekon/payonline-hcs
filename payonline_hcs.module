@@ -661,14 +661,13 @@ function payonline_hcs_step_two_payment_form($form, &$form_state){
   );
   
   foreach($arrForm as $key=>$val2){
-    if(in_array($key, ['ReturnUrl', 'FailUrl'])) {
-      continue;
+    if(!in_array($key, ['ReturnUrl', 'FailUrl'])) {
+      $secKeyArr[] = $key.'='.$val2;
     }
     $form[$key] = array(
       '#type' => 'hidden',
       '#value' => $val2,
     );
-    $secKeyArr[] = $key.'='.$val2;
   }
   unset($key,$val2);
   
