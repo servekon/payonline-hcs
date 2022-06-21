@@ -1,3 +1,6 @@
+Version 1.0.7.5
+-Bug fix with generate Security Key(not include ReturnUrl und FailUrl);
+
 Version 1.0.7.4
 -Add pages for ReturnUrl und FailUrl;
 

@@ -661,6 +661,9 @@ function payonline_hcs_step_two_payment_form($form, &$form_state){
   );
   
   foreach($arrForm as $key=>$val2){
+    if(in_array($key, ['ReturnUrl', 'FailUrl'])) {
+      continue;
+    }
     $form[$key] = array(
       '#type' => 'hidden',
       '#value' => $val2,
